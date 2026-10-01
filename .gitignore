@@ -1,0 +1,39 @@
+# ── Backend ──────────────────────────────────────────────────────────
+backend/smart-campus-backend/target/
+backend/smart-campus-backend/.mvn/
+
+# ── Frontend ──────────────────────────────────────────────────────────
+frontend/node_modules/
+frontend/.expo/
+frontend/dist/
+frontend/web-build/
+
+# ── Environment / Secrets ─────────────────────────────────────────────
+.env
+.env.local
+.env.production
+# Keep .env.example (it has no secrets)
+
+# ── Build outputs ─────────────────────────────────────────────────────
+*.apk
+*.aab
+*.ipa
+*.keystore
+
+# ── IDE ───────────────────────────────────────────────────────────────
+.idea/
+*.iml
+.vscode/settings.json
+.vscode/launch.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# ── OS ────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Logs ─────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
