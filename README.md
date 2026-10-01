@@ -9,7 +9,7 @@
 
 | # | Name | Student ID | Feature Folder | Responsibility |
 |---|------|-----------|----------------|----------------|
-| 1 | *(Team Lead)* | — | `core/`, `auth/`, `api/`, `context/`, root layouts | Backend core & auth; Frontend base setup |
+| 1 | *(Member 1)* | — | `core/`, `auth/`, `api/`, `context/`, root layouts | Backend core & auth; Frontend base setup |
 | 2 | *(Member 2)* | — | `feature1/` (BE) · `features/feature1/` (FE) | Feature 1 |
 | 3 | *(Member 3)* | — | `feature2/` (BE) · `features/feature2/` (FE) | Feature 2 |
 | 4 | *(Member 4)* | — | `feature3/` (BE) · `features/feature3/` (FE) | Feature 3 |
