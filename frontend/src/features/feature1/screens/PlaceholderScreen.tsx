@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+﻿import { StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -18,7 +18,7 @@ export default function PlaceholderScreen() {
         <ThemedText type="subtitle">Feature 1</ThemedText>
         <ThemedView type="backgroundElement" style={styles.card}>
           <ThemedText type="small" themeColor="textSecondary">
-            🚧 Placeholder — Feature 1 screens go in{'\n'}
+            ðŸš§ Placeholder â€” Feature 1 screens go in{'\n'}
             src/features/feature1/screens/
           </ThemedText>
         </ThemedView>

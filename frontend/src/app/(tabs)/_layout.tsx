@@ -1,6 +1,10 @@
 import { Tabs } from 'expo-router';
 import { useColorScheme } from 'react-native';
-import { Colors } from '@/constants/theme';
+import { Colors, BrandColors } from '@/constants/theme';
+import { Ionicons } from '@expo/vector-icons';
+import { SymbolView } from 'expo-symbols';
+
+import { Feature1Provider } from '@/features/feature1/context/Feature1Context';
 
 /**
  * Tab navigator for the main app area.
@@ -12,37 +16,57 @@ export default function TabsLayout() {
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
 
   return (
+    <Feature1Provider>
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: colors.text,
+        tabBarActiveTintColor: BrandColors.primary,
         tabBarInactiveTintColor: colors.textSecondary,
         tabBarStyle: { backgroundColor: colors.background },
         headerStyle: { backgroundColor: colors.background },
         headerTintColor: colors.text,
         headerShown: true,
       }}>
-      {/* Home tab — owned by Team Lead */}
       <Tabs.Screen
         name="index"
-        options={{ title: 'Home', tabBarLabel: 'Home' }}
-      />
-      {/* Feature tabs — rename titles when feature names are confirmed */}
-      <Tabs.Screen
-        name="feature1/index"
-        options={{ title: 'Feature 1', tabBarLabel: 'Feature 1' }}
-      />
-      <Tabs.Screen
-        name="feature2/index"
-        options={{ title: 'Feature 2', tabBarLabel: 'Feature 2' }}
+        options={{
+          title: 'Map',
+          tabBarLabel: 'Map',
+          tabBarIcon: ({ focused, color }) => (
+            <SymbolView name="map" size={24} tintColor={color} fallback={<Ionicons name={focused ? "map" : "map-outline"} size={24} color={color} />} />
+          ),
+        }}
       />
       <Tabs.Screen
-        name="feature3/index"
-        options={{ title: 'Feature 3', tabBarLabel: 'Feature 3' }}
+        name="books"
+        options={{
+          title: 'Books',
+          tabBarLabel: 'Books',
+          tabBarIcon: ({ focused, color }) => (
+            <SymbolView name="book" size={24} tintColor={color} fallback={<Ionicons name={focused ? "book" : "book-outline"} size={24} color={color} />} />
+          ),
+        }}
       />
       <Tabs.Screen
-        name="feature4/index"
-        options={{ title: 'Feature 4', tabBarLabel: 'Feature 4' }}
+        name="myspace"
+        options={{
+          title: 'My Space',
+          tabBarLabel: 'My Space',
+          tabBarIcon: ({ focused, color }) => (
+            <SymbolView name="calendar" size={24} tintColor={color} fallback={<Ionicons name={focused ? "calendar" : "calendar-outline"} size={24} color={color} />} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="notify"
+        options={{
+          title: 'Notify',
+          tabBarLabel: 'Notify',
+          tabBarIcon: ({ focused, color }) => (
+            <SymbolView name="bell" size={24} tintColor={color} fallback={<Ionicons name={focused ? "notifications" : "notifications-outline"} size={24} color={color} />} />
+          ),
+        }}
       />
     </Tabs>
+    </Feature1Provider>
   );
 }
