@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,6 +17,13 @@ export default function BookingConfirmedScreen() {
   const reservation: ReservationResponse | null = reservationStr ? JSON.parse(reservationStr) : null;
 
   const [submitting, setSubmitting] = useState(false);
+  const [checkInCode, setCheckInCode] = useState('');
+
+  useEffect(() => {
+    if (reservation) {
+      setCheckInCode(reservation.code);
+    }
+  }, [reservation]);
 
   const handleCheckIn = async () => {
     if (!reservation) return;
@@ -70,8 +77,11 @@ export default function BookingConfirmedScreen() {
         <View style={styles.qrSection}>
           <Text style={styles.qrTitle}>SHOW THIS AT THE DESK TO CHECK IN</Text>
           <View style={styles.qrBox}>
-            <QRCode value={reservation.uniqueCode} size={100} color="#1E293B" backgroundColor="transparent" />
+            <QRCode value={reservation.code || 'UNKNOWN'} size={100} color="#1E293B" backgroundColor="transparent" />
           </View>
+          <Text style={{ marginTop: 16, fontSize: 16, fontWeight: '700', color: BrandColors.navy }}>
+            CODE: {reservation.code}
+          </Text>
         </View>
       </View>
 

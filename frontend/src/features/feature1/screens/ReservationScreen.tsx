@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -60,7 +60,10 @@ export default function ReservationScreen() {
     if (!selectedSlot) return;
     try {
       setSubmitting(true);
-      const todayStr = new Date().toISOString().split('T')[0];
+      // Adjust to local timezone to prevent booking yesterday's date if past midnight UTC
+      const localDate = new Date();
+      localDate.setMinutes(localDate.getMinutes() - localDate.getTimezoneOffset());
+      const todayStr = localDate.toISOString().split('T')[0];
       const res = await createReservation({
         spaceId,
         date: todayStr,
@@ -73,7 +76,12 @@ export default function ReservationScreen() {
       if (err.response?.status === 409) {
         msg = err.response.data?.message || 'Space already booked';
       }
-      Alert.alert('Booking Failed', msg, [{ text: 'OK', onPress: () => loadData() }]);
+      if (typeof window !== 'undefined') {
+        window.alert(`Booking Failed\n\n${msg}`);
+        loadData();
+      } else {
+        Alert.alert('Booking Failed', msg, [{ text: 'OK', onPress: () => loadData() }]);
+      }
     } finally {
       setSubmitting(false);
     }

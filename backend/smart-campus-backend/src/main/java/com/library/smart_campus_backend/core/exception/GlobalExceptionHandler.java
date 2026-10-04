@@ -10,6 +10,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -87,6 +88,20 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.NOT_FOUND, "Not Found", ex.getMessage(), request);
     }
 
+    // ── Spring ResponseStatusException ────────────────────────────────
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ApiError> handleResponseStatus(
+            ResponseStatusException ex,
+            HttpServletRequest request) {
+
+        return buildResponse(
+                HttpStatus.valueOf(ex.getStatusCode().value()),
+                ex.getStatusCode().toString(),
+                ex.getReason(),
+                request);
+    }
+
     // ── 500 Internal Server Error ─────────────────────────────────────
 
     /** Catch-all for unexpected exceptions. */
@@ -94,11 +109,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleGeneral(
             Exception ex,
             HttpServletRequest request) {
+        
+        ex.printStackTrace(); // PRINT THE TRACE FOR DEBUGGING
 
         return buildResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "Internal Server Error",
-                "An unexpected error occurred. Please try again later.",
+                ex.getMessage() != null ? ex.getMessage() : ex.toString(),
                 request);
     }
 

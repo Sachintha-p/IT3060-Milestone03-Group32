@@ -1,12 +1,13 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, BrandColors } from '@/constants/theme';
 import { useFeature1, FilterState } from '../context/Feature1Context';
-import { Icons } from '../icons';
 import { Zone } from '../types';
+import { saveFilter, getFilters } from '../api/reservations';
+import { Alert } from 'react-native';
 
 // Custom Switch component to match the exact Figma design
 const CustomSwitch = ({ value, onValueChange }: { value: boolean, onValueChange: (v: boolean) => void }) => (
@@ -31,6 +32,44 @@ export default function FiltersScreen() {
   const { filters, setFilters } = useFeature1();
 
   const [localFilters, setLocalFilters] = useState<FilterState>(filters);
+
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    getFilters().then(data => {
+      if (data) {
+        setLocalFilters({
+          floor: data.floor || undefined,
+          zone: data.zone ? data.zone.split(',') : [],
+          hasPower: data.hasPower !== null ? data.hasPower : undefined,
+          hasPc: data.hasPc !== null ? data.hasPc : undefined,
+        });
+      }
+    }).catch(e => {
+      console.log('Error loading filter', e);
+      if (typeof window !== 'undefined') window.alert('Error\n\nFailed to load saved filters.');
+      else Alert.alert('Error', 'Failed to load saved filters.');
+    }).finally(() => setLoading(false));
+  }, []);
+
+  const handleSaveFilter = async () => {
+    try {
+      setLoading(true);
+      await saveFilter({
+        floor: localFilters.floor || null,
+        zone: localFilters.zone.length > 0 ? localFilters.zone.join(',') : null,
+        hasPower: localFilters.hasPower !== undefined ? localFilters.hasPower : null,
+        hasPc: localFilters.hasPc !== undefined ? localFilters.hasPc : null
+      });
+      if (typeof window !== 'undefined') window.alert('Success\n\nFilters successfully saved to database!');
+      else Alert.alert('Success', 'Filters successfully saved to database!');
+    } catch (e) {
+      if (typeof window !== 'undefined') window.alert('Error\n\nFailed to save filters.');
+      else Alert.alert('Error', 'Failed to save filters.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Matched exactly to the screenshot
   const floors = ['Floor 3 (Group)', 'Floor 1 (Quiet)', 'Floor 2 (Silent Pods)'];
@@ -120,6 +159,9 @@ export default function FiltersScreen() {
       <View style={styles.footer}>
         <TouchableOpacity style={styles.applyBtn} onPress={handleApply} activeOpacity={0.8}>
           <Text style={styles.applyBtnText}>Apply Filters</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.applyBtn, { backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', marginTop: 12 }]} onPress={handleSaveFilter} activeOpacity={0.8} disabled={loading}>
+          <Text style={[styles.applyBtnText, { color: loading ? '#94A3B8' : BrandColors.navy }]}>{loading ? 'Saving...' : 'Save Filters'}</Text>
         </TouchableOpacity>
       </View>
 
