@@ -1,5 +1,5 @@
-﻿import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, RefreshControl, ActivityIndicator, TextInput } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, RefreshControl, ActivityIndicator, TextInput, Alert } from 'react-native';
 import { useRouter, useFocusEffect, useNavigation } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, BrandColors } from '@/constants/theme';
@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useFeature1 } from '../context/Feature1Context';
 import { Icons } from '../icons';
 import { getSpaces } from '../api/spaces';
+import { createAlert, getFilters } from '../api/reservations';
 import { SpaceSummaryDTO } from '../types';
 
 type ViewMode = 'list' | 'floor_plan';
@@ -15,7 +16,7 @@ export default function SpaceMapScreen() {
   const router = useRouter();
   const navigation = useNavigation();
   const { user, isGuest } = useAuth();
-  const { filters } = useFeature1();
+  const { filters, setFilters } = useFeature1();
 
   const [mode, setMode] = useState<ViewMode>('list'); // Default to list view
   const [spaces, setSpaces] = useState<SpaceSummaryDTO[]>([]);
@@ -61,10 +62,26 @@ export default function SpaceMapScreen() {
   useFocusEffect(
     useCallback(() => {
       setLoading(true);
-      loadData();
+      // Auto-load saved filters from database once
+      if (!isGuest && Object.keys(filters).length === 0) {
+        getFilters().then(data => {
+          if (data) {
+            setFilters({
+              floor: data.floor || undefined,
+              zone: data.zone ? data.zone.split(',') : [],
+              hasPower: data.hasPower !== null ? data.hasPower : undefined,
+              hasPc: data.hasPc !== null ? data.hasPc : undefined,
+            });
+          }
+        }).catch(e => console.log('Failed to auto-load filters', e))
+        .finally(() => loadData());
+      } else {
+        loadData();
+      }
+      
       const interval = setInterval(loadData, 30000);
       return () => clearInterval(interval);
-    }, [loadData])
+    }, [loadData, isGuest])
   );
 
   const onRefresh = () => {
@@ -144,6 +161,17 @@ export default function SpaceMapScreen() {
     </View>
   );
 
+  const handleNotify = async (space: SpaceSummaryDTO) => {
+    try {
+      await createAlert(space.zone);
+      if (typeof window !== 'undefined') window.alert(`Success!\n\nPreferred-zone seat alert for ${space.name} created!`);
+      else Alert.alert('Success', `Preferred-zone seat alert for ${space.name} created!`);
+    } catch (e) {
+      if (typeof window !== 'undefined') window.alert('Error\n\nFailed to create seat alert.');
+      else Alert.alert('Error', 'Failed to create seat alert.');
+    }
+  };
+
   const renderContent = () => {
     if (loading) return <ActivityIndicator size="large" color={BrandColors.primary} style={{ marginTop: 50 }} />;
     if (error) return (
@@ -175,8 +203,15 @@ export default function SpaceMapScreen() {
               <Text style={styles.listCardTitle}>{s.name}</Text>
               <Text style={styles.listCardSubtitle}>{s.floor} • Power</Text>
             </View>
-            <View style={[styles.statusPill, { backgroundColor: bgColor }]}>
-              <Text style={[styles.statusPillText, { color: textColor }]}>{s.status}</Text>
+            <View style={{ alignItems: 'flex-end' }}>
+              <View style={[styles.statusPill, { backgroundColor: bgColor, marginBottom: s.status !== 'AVAILABLE' ? 8 : 0 }]}>
+                <Text style={[styles.statusPillText, { color: textColor }]}>{s.status}</Text>
+              </View>
+              {s.status !== 'AVAILABLE' && (
+                <TouchableOpacity onPress={() => handleNotify(s)}>
+                  <Text style={{ fontSize: 12, color: BrandColors.orange, fontWeight: '600' }}>Notify me</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </TouchableOpacity>
         );
@@ -202,7 +237,13 @@ export default function SpaceMapScreen() {
                   borderColor: colors.border
                 }
               ]}
-              onPress={() => router.push({ pathname: '/feature1/reservation', params: { spaceId: s.id } })}
+              onPress={() => {
+                if (typeof window !== 'undefined') window.alert('Success\n\nDesk selected!');
+                else Alert.alert('Success', 'Desk selected!');
+                setTimeout(() => {
+                  router.push({ pathname: '/feature1/reservation', params: { spaceId: s.id } });
+                }, 500);
+              }}
             >
               <Text style={styles.floorPlanName}>{s.name}</Text>
               <Text style={styles.floorPlanFloor}>

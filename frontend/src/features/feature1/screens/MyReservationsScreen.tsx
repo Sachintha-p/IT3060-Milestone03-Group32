@@ -1,9 +1,9 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, RefreshControl, Alert } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Colors, BrandColors } from '@/constants/theme';
 import { useAuth } from '@/context/AuthContext';
-import { getMyReservations } from '../api/reservations';
+import { getMyReservations, updateSlot } from '../api/reservations';
 import { ReservationResponse } from '../types';
 
 export default function MyReservationsScreen() {
@@ -61,6 +61,29 @@ export default function MyReservationsScreen() {
     );
   }
 
+  const [editingId, setEditingId] = useState<number | null>(null);
+
+  const handleEditTime = async (r: ReservationResponse) => {
+    try {
+      setEditingId(r.id);
+      // Mocking the new time slot for demo purposes as there is no date picker UI yet
+      await updateSlot(r.id, r.reservationDate, '10:00:00', '11:00:00');
+      if (typeof window !== 'undefined') window.alert('Success\n\nReservation time updated successfully!');
+      else Alert.alert('Success', 'Reservation time updated successfully!');
+      loadData(); // Refresh the list
+    } catch (e: any) {
+      if (e.response?.status === 409) {
+        if (typeof window !== 'undefined') window.alert('Conflict\n\nThis time slot is already booked. Please try another time.');
+        else Alert.alert('Conflict', 'This time slot is already booked. Please try another time.');
+      } else {
+        if (typeof window !== 'undefined') window.alert('Error\n\nFailed to update reservation time.');
+        else Alert.alert('Error', 'Failed to update reservation time.');
+      }
+    } finally {
+      setEditingId(null);
+    }
+  };
+
   const renderContent = () => {
     if (loading) return <ActivityIndicator size="large" color={BrandColors.primary} style={{ marginTop: 50 }} />;
     if (error) return (
@@ -92,12 +115,23 @@ export default function MyReservationsScreen() {
           </View>
           
           {isReserved && (
-            <TouchableOpacity 
-              style={styles.cancelBtn}
-              onPress={() => router.push({ pathname: '/feature1/cancel', params: { data: JSON.stringify(r) } })}
-            >
-              <Text style={styles.cancelBtnText}>Cancel</Text>
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <TouchableOpacity 
+                style={[styles.cancelBtn, { flex: 1, backgroundColor: '#E0F2FE' }]}
+                onPress={() => handleEditTime(r)}
+                disabled={editingId === r.id}
+              >
+                <Text style={[styles.cancelBtnText, { color: editingId === r.id ? '#94A3B8' : '#0284C7' }]}>
+                  {editingId === r.id ? 'Saving...' : 'Edit Time'}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.cancelBtn, { flex: 1 }]}
+                onPress={() => router.push({ pathname: '/feature1/cancel', params: { data: JSON.stringify(r) } })}
+              >
+                <Text style={styles.cancelBtnText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
           )}
         </View>
       );
