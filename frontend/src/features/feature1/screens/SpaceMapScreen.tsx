@@ -2,13 +2,25 @@ import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, RefreshControl, ActivityIndicator, TextInput, Alert } from 'react-native';
 import { useRouter, useFocusEffect, useNavigation } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors, BrandColors } from '@/constants/theme';
 import { useAuth } from '@/context/AuthContext';
 import { useFeature1 } from '../context/Feature1Context';
 import { Icons } from '../icons';
 import { getSpaces } from '../api/spaces';
 import { createAlert, getFilters } from '../api/reservations';
 import { SpaceSummaryDTO } from '../types';
+
+// 60% white  |  30% blue  |  10% orange
+const PALETTE = {
+  white: '#FFFFFF',       // 60% - screen and card surfaces
+  paleBlue: '#EEF3FD',    // 60% - soft tint for inputs and toggle track
+  line: '#E1E8F5',        // card borders
+  navy: '#132455',        // 30% - titles
+  blue: '#2352C8',        // 30% - active states, primary buttons
+  orange: '#F47B20',      // 10% - accents only (Filters, Notify me)
+  orangeSoft: '#FFF1E6',
+  muted: '#64748B',
+  danger: '#DC2626',
+};
 
 type ViewMode = 'list' | 'floor_plan';
 
@@ -29,15 +41,6 @@ export default function SpaceMapScreen() {
     useCallback(() => {
       navigation.setOptions({
         title: mode === 'list' ? 'Space Map' : 'Floor Plan', // Dynamic title based on mode
-        headerRight: () => (
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 15 }}>
-            <Ionicons name={Icons.legendPerson} size={18} color={Colors.light.textSecondary} />
-            <Text style={{ marginLeft: 6, fontSize: 14, color: Colors.light.textSecondary }}>
-              {isGuest ? 'Guest' : user?.email?.split('@')[0]}
-            </Text>
-          </View>
-        ),
-        headerLeft: () => null
       });
     }, [navigation, isGuest, user, mode])
   );
@@ -74,11 +77,11 @@ export default function SpaceMapScreen() {
             });
           }
         }).catch(e => console.log('Failed to auto-load filters', e))
-        .finally(() => loadData());
+          .finally(() => loadData());
       } else {
         loadData();
       }
-      
+
       const interval = setInterval(loadData, 30000);
       return () => clearInterval(interval);
     }, [loadData, isGuest])
@@ -92,10 +95,10 @@ export default function SpaceMapScreen() {
   // Status Pill Styles for List View
   const getListStyles = (status: string) => {
     switch (status) {
-      case 'AVAILABLE': return { text: '#065F46', bg: '#D1FAE5' };
-      case 'OCCUPIED': return { text: '#DC2626', bg: '#FEE2E2' };
-      case 'RESERVED': return { text: '#D97706', bg: '#FEF3C7' };
-      default: return { text: Colors.light.textSecondary, bg: '#F1F5F9' };
+      case 'AVAILABLE': return { text: '#065F46', bg: '#D1FAE5', bar: '#22C55E' };
+      case 'OCCUPIED': return { text: '#DC2626', bg: '#FEE2E2', bar: '#EF4444' };
+      case 'RESERVED': return { text: '#B45309', bg: '#FEF3C7', bar: '#F59E0B' };
+      default: return { text: PALETTE.muted, bg: '#F1F5F9', bar: PALETTE.line };
     }
   };
 
@@ -118,7 +121,7 @@ export default function SpaceMapScreen() {
         <Ionicons
           name={Icons.listView}
           size={18}
-          color={mode === 'list' ? BrandColors.primary : Colors.light.textSecondary}
+          color={mode === 'list' ? PALETTE.white : PALETTE.muted}
           style={{ marginBottom: 4 }}
         />
         <Text style={[styles.toggleText, mode === 'list' && styles.toggleTextActive]}>List View</Text>
@@ -131,7 +134,7 @@ export default function SpaceMapScreen() {
         <Ionicons
           name={Icons.floorPlan}
           size={18}
-          color={mode === 'floor_plan' ? BrandColors.primary : Colors.light.textSecondary}
+          color={mode === 'floor_plan' ? PALETTE.white : PALETTE.muted}
           style={{ marginBottom: 4 }}
         />
         <Text style={[styles.toggleText, mode === 'floor_plan' && styles.toggleTextActive]}>Floor Plan</Text>
@@ -141,11 +144,11 @@ export default function SpaceMapScreen() {
 
   const renderSearchBar = () => (
     <View style={styles.searchContainer}>
-      <Ionicons name="search-outline" size={20} color={Colors.light.textSecondary} style={styles.searchIcon} />
+      <Ionicons name="search-outline" size={20} color={PALETTE.blue} style={styles.searchIcon} />
       <TextInput
         style={styles.searchInput}
         placeholder="Search zones or desks..."
-        placeholderTextColor={Colors.light.textSecondary}
+        placeholderTextColor={PALETTE.muted}
         value={searchQuery}
         onChangeText={setSearchQuery}
       />
@@ -155,7 +158,7 @@ export default function SpaceMapScreen() {
   const renderSectionHeader = () => (
     <View style={styles.sectionHeader}>
       <Text style={styles.sectionTitle}>Floor 3 (Group)</Text>
-      <TouchableOpacity onPress={() => router.push('/feature1/filters')}>
+      <TouchableOpacity style={styles.filterBtn} onPress={() => router.push('/feature1/filters')}>
         <Text style={styles.filterText}>Filters</Text>
       </TouchableOpacity>
     </View>
@@ -173,7 +176,7 @@ export default function SpaceMapScreen() {
   };
 
   const renderContent = () => {
-    if (loading) return <ActivityIndicator size="large" color={BrandColors.primary} style={{ marginTop: 50 }} />;
+    if (loading) return <ActivityIndicator size="large" color={PALETTE.blue} style={{ marginTop: 50 }} />;
     if (error) return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorText}>{error}</Text>
@@ -192,11 +195,11 @@ export default function SpaceMapScreen() {
 
     if (mode === 'list') {
       return filteredSpaces.map(s => {
-        const { text: textColor, bg: bgColor } = getListStyles(s.status);
+        const { text: textColor, bg: bgColor, bar: barColor } = getListStyles(s.status);
         return (
           <TouchableOpacity
             key={s.id}
-            style={styles.listCard}
+            style={[styles.listCard, { borderLeftColor: barColor }]}
             onPress={() => router.push({ pathname: '/feature1/reservation', params: { spaceId: s.id } })}
           >
             <View style={styles.listCardLeft}>
@@ -208,8 +211,8 @@ export default function SpaceMapScreen() {
                 <Text style={[styles.statusPillText, { color: textColor }]}>{s.status}</Text>
               </View>
               {s.status !== 'AVAILABLE' && (
-                <TouchableOpacity onPress={() => handleNotify(s)}>
-                  <Text style={{ fontSize: 12, color: BrandColors.orange, fontWeight: '600' }}>Notify me</Text>
+                <TouchableOpacity style={styles.notifyBtn} onPress={() => handleNotify(s)}>
+                  <Text style={styles.notifyText}>Notify me</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -260,7 +263,14 @@ export default function SpaceMapScreen() {
   return (
     <ScrollView
       style={styles.container}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={PALETTE.blue}
+          colors={[PALETTE.blue]}
+        />
+      }
     >
       <View style={{ padding: 16 }}>
         {renderToggle()}
@@ -294,91 +304,114 @@ export default function SpaceMapScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF'
+    backgroundColor: PALETTE.white,
   },
+
+  // Toggle: pale blue track, solid blue active segment
   toggleContainer: {
     flexDirection: 'row',
-    backgroundColor: '#F1F5F9',
-    borderRadius: 12,
-    padding: 6,
-    marginBottom: 20
+    backgroundColor: PALETTE.paleBlue,
+    borderRadius: 16,
+    padding: 5,
+    marginBottom: 20,
   },
   toggleBtn: {
     flex: 1,
     flexDirection: 'column',
     alignItems: 'center',
     paddingVertical: 10,
-    borderRadius: 10
+    borderRadius: 12,
   },
   toggleActive: {
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2
+    backgroundColor: PALETTE.blue,
+    shadowColor: PALETTE.blue,
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
   },
   toggleText: {
     fontSize: 12,
-    color: Colors.light.textSecondary,
-    fontWeight: '600'
+    color: PALETTE.muted,
+    fontWeight: '600',
   },
   toggleTextActive: {
-    color: BrandColors.primary
+    color: PALETTE.white,
   },
+
+  // Search
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: PALETTE.paleBlue,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    marginBottom: 20
+    borderColor: PALETTE.line,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    marginBottom: 20,
   },
-  searchIcon: { marginRight: 8 },
+  searchIcon: { marginRight: 10 },
   searchInput: {
     flex: 1,
     fontSize: 15,
-    color: Colors.light.text
+    color: PALETTE.navy,
   },
+
+  // Section header
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16
+    marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1E293B'
+    fontSize: 17,
+    fontWeight: '800',
+    color: PALETTE.navy,
+  },
+  filterBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: PALETTE.orange,
+    backgroundColor: PALETTE.orangeSoft,
   },
   filterText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: BrandColors.primary
+    fontSize: 13,
+    fontWeight: '700',
+    color: PALETTE.orange,
   },
+
+  // List cards
   listCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: PALETTE.white,
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: PALETTE.line,
+    borderLeftWidth: 5,
     marginBottom: 12,
+    shadowColor: PALETTE.navy,
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
   listCardLeft: { flex: 1 },
   listCardTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1E293B',
-    marginBottom: 4
+    color: PALETTE.navy,
+    marginBottom: 4,
   },
   listCardSubtitle: {
     fontSize: 13,
-    color: Colors.light.textSecondary
+    color: PALETTE.muted,
   },
   statusPill: {
     paddingHorizontal: 10,
@@ -388,67 +421,86 @@ const styles = StyleSheet.create({
   statusPillText: {
     fontSize: 11,
     fontWeight: '700',
-    letterSpacing: 0.5
+    letterSpacing: 0.5,
   },
+  notifyBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: PALETTE.orange,
+    backgroundColor: PALETTE.orangeSoft,
+  },
+  notifyText: {
+    fontSize: 12,
+    color: PALETTE.orange,
+    fontWeight: '700',
+  },
+
+  // Legend (floor plan)
   legendContainer: {
-    marginBottom: 20
+    marginBottom: 20,
   },
   legendTextTitle: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#64748B',
+    color: PALETTE.blue,
     marginBottom: 12,
-    letterSpacing: 0.5
+    letterSpacing: 0.5,
   },
   legendDots: {
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 16
+    marginRight: 16,
   },
   dot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    marginRight: 6
+    marginRight: 6,
   },
   legendLabel: {
     fontSize: 13,
-    color: '#334155'
+    color: PALETTE.navy,
   },
+
+  // Floor plan grid
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
   },
   floorPlanTile: {
-    borderWidth: 1,
-    borderRadius: 12,
+    borderWidth: 1.5,
+    borderRadius: 16,
     padding: 16,
-    marginBottom: 16
+    marginBottom: 16,
   },
   floorPlanName: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#1E293B',
-    marginBottom: 6
+    color: PALETTE.navy,
+    marginBottom: 6,
   },
   floorPlanFloor: {
     fontSize: 12,
-    color: '#64748B',
-    marginBottom: 16
+    color: PALETTE.muted,
+    marginBottom: 16,
   },
   floorPlanStatus: {
     fontSize: 11,
     fontWeight: '800',
-    letterSpacing: 0.5
+    letterSpacing: 0.5,
   },
-  emptyText: { textAlign: 'center', marginTop: 40, color: Colors.light.textSecondary },
+
+  // Empty and error states
+  emptyText: { textAlign: 'center', marginTop: 40, color: PALETTE.muted },
   errorContainer: { marginTop: 40, alignItems: 'center' },
-  errorText: { color: BrandColors.danger, marginBottom: 16 },
-  retryBtn: { padding: 12, backgroundColor: BrandColors.primary, borderRadius: 8 },
-  retryText: { color: 'white', fontWeight: '600' }
+  errorText: { color: PALETTE.danger, marginBottom: 16 },
+  retryBtn: { paddingVertical: 12, paddingHorizontal: 28, backgroundColor: PALETTE.blue, borderRadius: 12 },
+  retryText: { color: PALETTE.white, fontWeight: '700' },
 });
