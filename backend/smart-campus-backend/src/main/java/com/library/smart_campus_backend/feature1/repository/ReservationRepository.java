@@ -18,6 +18,9 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     
     @EntityGraph(attributePaths = {"space"})
     List<Reservation> findByReservationDateAndStatusIn(LocalDate date, List<ReservationStatus> statuses);
+
+    @EntityGraph(attributePaths = {"space"})
+    List<Reservation> findByReservationDateBetween(LocalDate from, LocalDate to);
     
     List<Reservation> findBySpaceIdAndReservationDateAndStatusIn(Long spaceId, LocalDate date, List<ReservationStatus> statuses);
 
