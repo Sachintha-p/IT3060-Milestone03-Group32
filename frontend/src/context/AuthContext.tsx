@@ -8,15 +8,17 @@ export interface AuthUser {
   id: number;
   name: string;
   email: string;
-  role: 'STUDENT' | 'ADMIN';
+  role: 'STUDENT' | 'STAFF' | 'ADMIN';
 }
 
 interface AuthContextType {
   user: AuthUser | null;
   token: string | null;
+  isGuest: boolean;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (identifier: string, password: string, portal: 'STUDENT' | 'STAFF_ADMIN') => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
+  loginAsGuest: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -26,6 +28,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const TOKEN_KEY = 'auth_token';
 const USER_KEY = 'auth_user';
+const GUEST_KEY = 'auth_guest';
 
 // ── Provider ──────────────────────────────────────────────────────────
 
@@ -36,17 +39,21 @@ const USER_KEY = 'auth_user';
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [isGuest, setIsGuest] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Load persisted session on startup
   useEffect(() => {
     (async () => {
       try {
-        const [savedToken, savedUser] = await Promise.all([
+        const [savedToken, savedUser, savedGuest] = await Promise.all([
           AsyncStorage.getItem(TOKEN_KEY),
           AsyncStorage.getItem(USER_KEY),
+          AsyncStorage.getItem(GUEST_KEY),
         ]);
-        if (savedToken && savedUser) {
+        if (savedGuest === 'true') {
+          setIsGuest(true);
+        } else if (savedToken && savedUser) {
           setToken(savedToken);
           setUser(JSON.parse(savedUser));
         }
@@ -59,24 +66,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   /** Authenticate, persist the token + user, and update state. */
-  const login = async (email: string, password: string) => {
-    const res = await apiClient.post('/api/auth/login', { email, password });
+  const login = async (identifier: string, password: string, portal: 'STUDENT' | 'STAFF_ADMIN') => {
+    const res = await apiClient.post('/api/auth/login', { identifier, password, portal });
     const { token: newToken, ...profile } = res.data.data as { token: string } & AuthUser;
     await persist(newToken, profile as AuthUser);
+    setIsGuest(false);
+    await AsyncStorage.removeItem(GUEST_KEY);
   };
 
-  /** Register a new STUDENT account and log them in immediately. */
+  /** Register a new user and persist session */
   const register = async (name: string, email: string, password: string) => {
     const res = await apiClient.post('/api/auth/register', { name, email, password });
     const { token: newToken, ...profile } = res.data.data as { token: string } & AuthUser;
     await persist(newToken, profile as AuthUser);
+    setIsGuest(false);
+    await AsyncStorage.removeItem(GUEST_KEY);
+  };
+
+  /** Set guest mode */
+  const loginAsGuest = async () => {
+    await AsyncStorage.setItem(GUEST_KEY, 'true');
+    setIsGuest(true);
   };
 
   /** Clear the session from memory and AsyncStorage. */
   const logout = async () => {
-    await AsyncStorage.multiRemove([TOKEN_KEY, USER_KEY]);
+    await AsyncStorage.multiRemove([TOKEN_KEY, USER_KEY, GUEST_KEY]);
     setToken(null);
     setUser(null);
+    setIsGuest(false);
   };
 
   // ── Private helper ────────────────────────────────────────────────
@@ -91,7 +109,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token, isGuest, loading, login, register, loginAsGuest, logout }}>
       {children}
     </AuthContext.Provider>
   );

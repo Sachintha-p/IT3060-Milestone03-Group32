@@ -2,54 +2,76 @@
  * =====================================================================
  * Smart Library System — Design Tokens
  * =====================================================================
- * All colors, spacing, typography, and layout constants live here.
- * To retheme the app:
- *   1. Update Colors.light / Colors.dark.
- *   2. Update FontSizes / FontWeights.
- *   3. Everything using these tokens updates automatically.
- * =====================================================================
  */
 
 import '@/global.css';
-
 import { Platform } from 'react-native';
 
 // ── Colors ────────────────────────────────────────────────────────────
 
 export const Colors = {
   light: {
-    /** Primary text */
-    text: '#000000',
-    /** Page / screen background */
+    text: '#132455',
     background: '#ffffff',
-    /** Card / input background */
     backgroundElement: '#F0F0F3',
-    /** Selected / active element background */
     backgroundSelected: '#E0E1E6',
-    /** Secondary / hint text */
-    textSecondary: '#60646C',
+    textSecondary: '#64748B',
+    surface: '#F8FAFC', 
+    border: '#E2E8F0',
+    primary: '#F2732E',
+    
+    // Status colors
+    statusAvailableBg: '#D1FAE5',
+    statusAvailableText: '#065F46',
+    statusAvailableBorder: '#34D399',
+    statusOccupiedBg: '#FEE2E2',
+    statusOccupiedText: '#DC2626',
+    statusOccupiedBorder: '#F87171',
+    statusReservedBg: '#FEF3C7',
+    statusReservedText: '#D97706',
+    statusReservedBorder: '#FBBF24',
+    
+    // UI elements
+    cardBackground: '#ffffff',
+    cardBorder: '#E2E8F0',
   },
   dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
+    text: '#132455',
+    background: '#ffffff',
+    backgroundElement: '#F0F0F3',
+    backgroundSelected: '#E0E1E6',
+    textSecondary: '#64748B',
+    surface: '#F8FAFC', 
+    border: '#E2E8F0',
+    primary: '#F2732E',
+    
+    statusAvailableBg: '#D1FAE5',
+    statusAvailableText: '#065F46',
+    statusAvailableBorder: '#34D399',
+    statusOccupiedBg: '#FEE2E2',
+    statusOccupiedText: '#DC2626',
+    statusOccupiedBorder: '#F87171',
+    statusReservedBg: '#FEF3C7',
+    statusReservedText: '#D97706',
+    statusReservedBorder: '#FBBF24',
+    
+    cardBackground: '#ffffff',
+    cardBorder: '#E2E8F0',
   },
 } as const;
 
-export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
-
-// ── Brand / Accent Colors ─────────────────────────────────────────────
+export type ThemeColor = keyof typeof Colors.light;
 
 export const BrandColors = {
-  primary: '#208AEF',       // main brand blue (splash, buttons)
-  primaryDark: '#0274DF',   // darker shade for pressed states
-  primaryLight: '#3C9FFE',  // lighter shade for gradients
-  danger: '#DC2626',        // red for errors and logout
-  success: '#16A34A',       // green for success states
-  warning: '#D97706',       // amber for warnings
-  link: '#3c87f7',          // hyperlink blue
+  primary: '#F2732E',
+  primaryDark: '#132455',
+  primaryLight: '#ffa070',
+  navy: '#132455',
+  orange: '#F2732E',
+  danger: '#DC2626',
+  success: '#16A34A',
+  warning: '#D97706',
+  link: '#3c87f7',
 } as const;
 
 // ── Typography ────────────────────────────────────────────────────────
@@ -59,7 +81,7 @@ export const FontSizes = {
   sm: 12,
   base: 14,
   md: 16,
-  lg: 20,
+  lg: 18,
   xl: 24,
   '2xl': 32,
   '3xl': 48,
@@ -72,30 +94,18 @@ export const FontWeights = {
   bold: '700' as const,
 } as const;
 
-/** Platform-specific font families. */
-export const Fonts = Platform.select({
-  ios: {
-    sans: 'system-ui',
-    serif: 'ui-serif',
-    rounded: 'ui-rounded',
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: 'var(--font-display)',
-    serif: 'var(--font-serif)',
-    rounded: 'var(--font-rounded)',
-    mono: 'var(--font-mono)',
-  },
-});
+export const Fonts = {
+  regular: 'Inter_400Regular',
+  medium: 'Inter_500Medium',
+  semibold: 'Inter_600SemiBold',
+  bold: 'Inter_700Bold',
+  mono: Platform.OS === 'ios' ? 'ui-monospace' : 'monospace',
+  sans: 'normal',
+  serif: 'serif',
+  rounded: 'normal',
+};
 
 // ── Spacing Scale ─────────────────────────────────────────────────────
-// Base unit is 4 px. Use these tokens instead of raw numbers.
 
 export const Spacing = {
   half: 2,
@@ -105,6 +115,14 @@ export const Spacing = {
   four: 24,
   five: 32,
   six: 64,
+  2: 2,
+  4: 4,
+  8: 8,
+  12: 12,
+  16: 16,
+  24: 24,
+  32: 32,
+  64: 64,
 } as const;
 
 // ── Border Radius ─────────────────────────────────────────────────────
@@ -112,15 +130,12 @@ export const Spacing = {
 export const Radius = {
   sm: 4,
   md: 8,
-  lg: 16,
-  xl: 24,
+  lg: 12,
+  xl: 16,
   full: 9999,
 } as const;
 
 // ── Layout Constants ──────────────────────────────────────────────────
 
-/** Extra bottom padding so content clears the native tab bar. */
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
-
-/** Maximum width for content on wide screens (tablets / web). */
 export const MaxContentWidth = 800;

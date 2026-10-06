@@ -34,6 +34,10 @@ public class User implements UserDetails {
     @Column(unique = true, nullable = false)
     private String email;
 
+    /** Optional unique ID for students. */
+    @Column(unique = true)
+    private String studentId;
+
     /** BCrypt-hashed password. Never stored as plaintext. */
     @Column(nullable = false)
     private String password;
@@ -42,6 +46,10 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
+
+    @Column(columnDefinition = "varchar(255) default 'ACTIVE'")
+    @Builder.Default
+    private String status = "ACTIVE";
 
     // ── UserDetails implementation ────────────────────────────────────
 
@@ -60,5 +68,5 @@ public class User implements UserDetails {
     @Override public boolean isAccountNonExpired()     { return true; }
     @Override public boolean isAccountNonLocked()      { return true; }
     @Override public boolean isCredentialsNonExpired() { return true; }
-    @Override public boolean isEnabled()               { return true; }
+    @Override public boolean isEnabled()               { return "ACTIVE".equals(status); }
 }
