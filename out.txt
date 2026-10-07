@@ -1,0 +1,10 @@
+a) staff POST /api/alerts: 403
+b) admin POST /api/alerts: 403
+c) no token POST /api/alerts: 403
+d) student POST /api/alerts (MISSING): 200
+e) student POST same book again: 409
+f) student DELETE then POST: 200
+g) no token GET /api/books: 200, GET /api/books/{id}: 200
+h) student PATCH /api/books/{id}/status: 403
+i) staff PATCH to AVAILABLE, student GET alerts status: NOTIFIED
+j) no token POST /api/books/search-history: 403

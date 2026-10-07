@@ -122,8 +122,8 @@ export default function ReservationScreen() {
               {detail.slots.map((slot, i) => {
                 const isActive = selectedSlot?.startTime === slot.startTime;
                 const timeStr = slot.startTime.substring(0, 5); // 10:00
-                const isPast = false; // Simplified, ideally check if past current time
-                const disabled = slot.isBooked || isPast;
+                // Jackson serializes boolean isBooked as "booked", so we check both
+                const disabled = slot.isBooked || (slot as any).booked;
 
                 return (
                   <TouchableOpacity
@@ -171,10 +171,10 @@ const styles = StyleSheet.create({
   slotGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   slotItem: { paddingVertical: 12, paddingHorizontal: 20, borderRadius: 24, borderWidth: 1, borderColor: Colors.light.backgroundSelected, backgroundColor: 'white' },
   slotItemActive: { backgroundColor: BrandColors.primary, borderColor: BrandColors.primary },
-  slotItemDisabled: { backgroundColor: Colors.light.backgroundElement, borderColor: Colors.light.backgroundElement },
+  slotItemDisabled: { backgroundColor: '#E2E8F0', borderColor: '#E2E8F0', opacity: 0.7 },
   slotText: { fontSize: 14, fontWeight: '600', color: Colors.light.text },
   slotTextActive: { color: 'white' },
-  slotTextDisabled: { color: Colors.light.textSecondary },
+  slotTextDisabled: { color: '#94A3B8', textDecorationLine: 'line-through' },
   footer: { padding: 20, paddingBottom: 40, borderTopWidth: 1, borderTopColor: Colors.light.backgroundSelected },
   confirmBtn: { backgroundColor: BrandColors.primary, borderRadius: 8, paddingVertical: 16, alignItems: 'center' },
   confirmBtnDisabled: { opacity: 0.5 },

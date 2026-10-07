@@ -83,7 +83,15 @@ public class SpaceService {
         for (int h = 8; h < 18; h++) {
             LocalTime slotStart = LocalTime.of(h, 0);
             LocalTime slotEnd = LocalTime.of(h + 1, 0);
-            boolean isBooked = bookedStartTimes.contains(slotStart); // || slotStart.isBefore(now.truncatedTo(ChronoUnit.HOURS));
+            
+            boolean isBooked = false;
+            for (Reservation res : activeRes) {
+                if (slotStart.isBefore(res.getEndTime()) && slotEnd.isAfter(res.getStartTime())) {
+                    isBooked = true;
+                    break;
+                }
+            }
+            
             slots.add(TimeSlotDTO.builder()
                     .startTime(slotStart)
                     .endTime(slotEnd)

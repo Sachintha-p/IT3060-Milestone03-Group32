@@ -38,40 +38,17 @@ Authorization: Bearer <JWT>
 
 | Method | URL | Auth Required |
 |--------|-----|---------------|
-| POST | `/api/auth/register` | No |
 | POST | `/api/auth/login` | No |
-
-### POST /api/auth/register
-
-**Request JSON:**
-```json
-{
-  "name": "John Doe",
-  "email": "john@example.com",
-  "password": "secret123"
-}
-```
-
-**Response JSON (201):**
-```json
-{
-  "success": true,
-  "message": "Registration successful",
-  "data": {
-    "token": "<JWT>",
-    "id": 1,
-    "name": "John Doe",
-    "email": "john@example.com",
-    "role": "STUDENT"
-  }
-}
-```
 
 ### POST /api/auth/login
 
 **Request JSON:**
 ```json
-{ "email": "john@example.com", "password": "secret123" }
+{ 
+  "identifier": "it20000000@my.sliit.lk", 
+  "password": "secret123",
+  "portal": "STUDENT" 
+}
 ```
 
 **Response JSON (200):**
@@ -91,32 +68,50 @@ Authorization: Bearer <JWT>
 
 ---
 
-## Feature 1 Endpoints
-
-> Replace `feature1` with the actual feature name once confirmed.
+## Feature 1 Endpoints (Space Management)
 
 | Method | URL | Auth | Description |
 |--------|-----|------|-------------|
-| GET | `/api/feature1` | Yes | List all items |
-| GET | `/api/feature1/{id}` | Yes | Get item by ID |
-| POST | `/api/feature1` | Yes | Create a new item |
-| PUT | `/api/feature1/{id}` | Yes | Update an item |
-| DELETE | `/api/feature1/{id}` | Yes (ADMIN) | Delete an item |
+| GET | `/api/public/spaces` | No | List all spaces. Optional query params: `?floor=&zone=&zone=&hasPower=&hasPc=` |
+| GET | `/api/public/spaces/{id}` | No | Get space details and timeslots |
+| GET | `/api/public/zones/summary` | No | Summary of space usage per floor and zone |
+| POST | `/api/reservations` | Yes | Create a new reservation |
+| GET | `/api/reservations/me` | Yes | List user's active/checked-in reservations |
+| PUT | `/api/reservations/{id}/check-in` | Yes | Check into a reservation |
+| DELETE | `/api/reservations/{id}` | Yes | Cancel a reservation (soft delete) |
 
-**Request JSON (POST/PUT):**
+**Request JSON (POST /api/reservations):**
 ```json
 {
-  "field1": "value",
-  "field2": "value"
+  "spaceId": 1,
+  "date": "2026-10-02",
+  "startTime": "10:00:00",
+  "endTime": "11:00:00"
 }
 ```
 
-**Response JSON (200/201):**
+**Response JSON (201):**
 ```json
 {
-  "success": true,
-  "message": "...",
-  "data": { "id": 1, "field1": "value", "field2": "value" }
+    "success": true,
+    "message": "Reservation created successfully",
+    "data": { 
+      "id": 1, 
+      "code": "A1B2C3D4",
+      "space": {
+        "id": 1,
+        "name": "Desk B1",
+        "floorLabel": "Floor 1 (Quiet)",
+        "zone": "SILENT_STUDY",
+        "type": "DESK",
+        "status": "AVAILABLE"
+      },
+      "reservationDate": "2026-10-02",
+      "startTime": "10:00:00",
+      "endTime": "11:00:00",
+      "status": "RESERVED",
+    "createdAt": "2026-10-02T10:00:00"
+  }
 }
 ```
 

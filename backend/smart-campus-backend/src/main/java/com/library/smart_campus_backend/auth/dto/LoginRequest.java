@@ -10,9 +10,11 @@ import lombok.Data;
 @Data
 public class LoginRequest {
 
-    @NotBlank(message = "Email is required")
-    @Email(message = "Email must be a valid email address")
-    private String email;
+    @NotBlank(message = "Identifier is required")
+    private String identifier;
+
+    @NotBlank(message = "Portal type is required")
+    private String portal;
 
     @NotBlank(message = "Password is required")
     private String password;

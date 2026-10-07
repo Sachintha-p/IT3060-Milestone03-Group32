@@ -7,12 +7,11 @@ import { SymbolView } from 'expo-symbols';
 import { Feature1Provider } from '@/features/feature1/context/Feature1Context';
 import { useAuth } from '@/context/AuthContext';
 
-// 60% white  |  30% blue  |  10% orange
+// 60% white  |  30% orange  |  10% blue
 const PALETTE = {
   white: '#FFFFFF',      // 60% - backgrounds and surfaces
-  navy: '#132455',       // 30% - deep blue (titles, avatar pill)
-  blue: '#2352C8',       // 30% - active tab and icons
-  orange: '#F47B20',     // 10% - small accents only
+  orange: '#EA6A0C',     // 30% - logo tile, active tab, avatar pill
+  navy: '#132455',       // 10% - titles and small details
   inactive: '#94A3B8',
 };
 
@@ -28,7 +27,7 @@ export default function TabsLayout() {
       <Tabs
         screenOptions={{
           // --- BOTTOM TAB BAR ---
-          tabBarActiveTintColor: PALETTE.blue,
+          tabBarActiveTintColor: PALETTE.orange,
           tabBarInactiveTintColor: PALETTE.inactive,
           tabBarStyle: {
             backgroundColor: PALETTE.white,
@@ -61,7 +60,7 @@ export default function TabsLayout() {
           headerTitleAlign: 'left',
           headerShown: true,
 
-          // 1. Logo in a blue tile
+          // 1. Logo in an orange tile
           headerLeft: () => (
             <View
               style={{
@@ -71,7 +70,7 @@ export default function TabsLayout() {
                 width: 40,
                 height: 40,
                 borderRadius: 12,
-                backgroundColor: PALETTE.navy,
+                backgroundColor: PALETTE.orange,
                 justifyContent: 'center',
                 alignItems: 'center',
               }}
@@ -92,7 +91,7 @@ export default function TabsLayout() {
             </View>
           ),
 
-          // 3. Avatar pill: navy pill, orange avatar dot, white role text
+          // 3. Avatar pill: orange pill, navy avatar dot, white role text
           headerRight: () => (
             <TouchableOpacity
               onPress={() => router.push('/(tabs)/profile')}
@@ -100,7 +99,7 @@ export default function TabsLayout() {
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
-                backgroundColor: PALETTE.navy,
+                backgroundColor: PALETTE.orange,
                 paddingHorizontal: 6,
                 paddingVertical: 6,
                 borderRadius: 24,
@@ -110,7 +109,7 @@ export default function TabsLayout() {
             >
               <View
                 style={{
-                  backgroundColor: PALETTE.orange,
+                  backgroundColor: PALETTE.navy,
                   width: 28,
                   height: 28,
                   borderRadius: 14,
@@ -176,6 +175,8 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="staff"
           options={{
+            headerShown: false,
+            tabBarStyle: { display: 'none' },
             title: 'Staff Control',
             tabBarLabel: 'Staff',
             tabBarIcon: ({ focused, color }) => (

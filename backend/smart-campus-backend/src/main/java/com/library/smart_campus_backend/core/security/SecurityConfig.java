@@ -29,6 +29,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+            // Enable CORS using the CorsConfigurationSource bean
+            .cors(org.springframework.security.config.Customizer.withDefaults())
             // Disable CSRF — stateless API uses JWT, not cookies
             .csrf(AbstractHttpConfigurer::disable)
 
@@ -39,13 +41,20 @@ public class SecurityConfig {
             // Route-level authorization rules
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/api/auth/**",       // login + register
+                    "/api/auth/**",       // login and register
+                    "/api/public/**",     // Guest endpoints
                     "/v3/api-docs/**",    // OpenAPI spec
                     "/swagger-ui/**",     // Swagger UI assets
                     "/swagger-ui.html"    // Swagger UI entry point
                 ).permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/books", "/api/books/{id}").permitAll()
                 .anyRequest().authenticated()
             )
+            .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authException) -> {
+                response.setContentType("application/json");
+                response.setStatus(401);
+                response.getWriter().write("{\"status\":401,\"error\":\"Unauthorized\",\"message\":\"Invalid or missing token\",\"path\":\"" + request.getRequestURI() + "\"}");
+            }))
 
             // Wire in the DAO provider and the JWT filter
             .authenticationProvider(authenticationProvider)

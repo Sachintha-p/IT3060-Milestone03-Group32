@@ -9,15 +9,13 @@ import { getSpaces } from '../api/spaces';
 import { createAlert, getFilters } from '../api/reservations';
 import { SpaceSummaryDTO } from '../types';
 
-// 60% white  |  30% blue  |  10% orange
+// 60% white  |  30% orange  |  10% blue
 const PALETTE = {
   white: '#FFFFFF',       // 60% - screen and card surfaces
-  paleBlue: '#EEF3FD',    // 60% - soft tint for inputs and toggle track
-  line: '#E1E8F5',        // card borders
-  navy: '#132455',        // 30% - titles
-  blue: '#2352C8',        // 30% - active states, primary buttons
-  orange: '#F47B20',      // 10% - accents only (Filters, Notify me)
-  orangeSoft: '#FFF1E6',
+  paleOrange: '#FFF4EA',  // 60% - soft tint for inputs and toggle track
+  line: '#F3E3D3',        // card borders
+  orange: '#EA6A0C',      // 30% - active states, buttons, accents
+  navy: '#132455',        // 10% - titles and small details
   muted: '#64748B',
   danger: '#DC2626',
 };
@@ -144,7 +142,7 @@ export default function SpaceMapScreen() {
 
   const renderSearchBar = () => (
     <View style={styles.searchContainer}>
-      <Ionicons name="search-outline" size={20} color={PALETTE.blue} style={styles.searchIcon} />
+      <Ionicons name="search-outline" size={20} color={PALETTE.navy} style={styles.searchIcon} />
       <TextInput
         style={styles.searchInput}
         placeholder="Search zones or desks..."
@@ -176,7 +174,7 @@ export default function SpaceMapScreen() {
   };
 
   const renderContent = () => {
-    if (loading) return <ActivityIndicator size="large" color={PALETTE.blue} style={{ marginTop: 50 }} />;
+    if (loading) return <ActivityIndicator size="large" color={PALETTE.orange} style={{ marginTop: 50 }} />;
     if (error) return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorText}>{error}</Text>
@@ -267,8 +265,8 @@ export default function SpaceMapScreen() {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          tintColor={PALETTE.blue}
-          colors={[PALETTE.blue]}
+          tintColor={PALETTE.orange}
+          colors={[PALETTE.orange]}
         />
       }
     >
@@ -307,10 +305,10 @@ const styles = StyleSheet.create({
     backgroundColor: PALETTE.white,
   },
 
-  // Toggle: pale blue track, solid blue active segment
+  // Toggle: pale orange track, solid orange active segment
   toggleContainer: {
     flexDirection: 'row',
-    backgroundColor: PALETTE.paleBlue,
+    backgroundColor: PALETTE.paleOrange,
     borderRadius: 16,
     padding: 5,
     marginBottom: 20,
@@ -323,9 +321,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   toggleActive: {
-    backgroundColor: PALETTE.blue,
-    shadowColor: PALETTE.blue,
-    shadowOpacity: 0.25,
+    backgroundColor: PALETTE.orange,
+    shadowColor: PALETTE.orange,
+    shadowOpacity: 0.3,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 3 },
     elevation: 3,
@@ -343,7 +341,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: PALETTE.paleBlue,
+    backgroundColor: PALETTE.paleOrange,
     borderWidth: 1,
     borderColor: PALETTE.line,
     borderRadius: 14,
@@ -371,17 +369,15 @@ const styles = StyleSheet.create({
     color: PALETTE.navy,
   },
   filterBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 7,
     borderRadius: 16,
-    borderWidth: 1.5,
-    borderColor: PALETTE.orange,
-    backgroundColor: PALETTE.orangeSoft,
+    backgroundColor: PALETTE.orange,
   },
   filterText: {
     fontSize: 13,
     fontWeight: '700',
-    color: PALETTE.orange,
+    color: PALETTE.white,
   },
 
   // List cards
@@ -396,8 +392,8 @@ const styles = StyleSheet.create({
     borderColor: PALETTE.line,
     borderLeftWidth: 5,
     marginBottom: 12,
-    shadowColor: PALETTE.navy,
-    shadowOpacity: 0.06,
+    shadowColor: PALETTE.orange,
+    shadowOpacity: 0.08,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
     elevation: 2,
@@ -427,13 +423,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 5,
     borderRadius: 14,
-    borderWidth: 1,
-    borderColor: PALETTE.orange,
-    backgroundColor: PALETTE.orangeSoft,
+    backgroundColor: PALETTE.orange,
   },
   notifyText: {
     fontSize: 12,
-    color: PALETTE.orange,
+    color: PALETTE.white,
     fontWeight: '700',
   },
 
@@ -444,7 +438,7 @@ const styles = StyleSheet.create({
   legendTextTitle: {
     fontSize: 11,
     fontWeight: '700',
-    color: PALETTE.blue,
+    color: PALETTE.navy,
     marginBottom: 12,
     letterSpacing: 0.5,
   },
@@ -501,6 +495,6 @@ const styles = StyleSheet.create({
   emptyText: { textAlign: 'center', marginTop: 40, color: PALETTE.muted },
   errorContainer: { marginTop: 40, alignItems: 'center' },
   errorText: { color: PALETTE.danger, marginBottom: 16 },
-  retryBtn: { paddingVertical: 12, paddingHorizontal: 28, backgroundColor: PALETTE.blue, borderRadius: 12 },
+  retryBtn: { paddingVertical: 12, paddingHorizontal: 28, backgroundColor: PALETTE.orange, borderRadius: 12 },
   retryText: { color: PALETTE.white, fontWeight: '700' },
 });

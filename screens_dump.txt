@@ -1,0 +1,1740 @@
+﻿import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import QRCode from 'react-native-qrcode-svg';
+import { Colors, BrandColors } from '@/constants/theme';
+import { ReservationResponse } from '../types';
+import { checkIn } from '../api/reservations';
+
+export default function BookingConfirmedScreen() {
+  const router = useRouter();
+  const params = useLocalSearchParams();
+  const insets = useSafeAreaInsets();
+
+  const reservationStr = params.data as string;
+  const reservation: ReservationResponse | null = reservationStr ? JSON.parse(reservationStr) : null;
+
+  const [submitting, setSubmitting] = useState(false);
+  const [checkInCode, setCheckInCode] = useState('');
+
+  useEffect(() => {
+    if (reservation) {
+      setCheckInCode(reservation.code);
+    }
+  }, [reservation]);
+
+  const handleCheckIn = async () => {
+    if (!reservation) return;
+    try {
+      setSubmitting(true);
+      const res = await checkIn(reservation.id);
+      router.replace({ pathname: '/feature1/check-in', params: { spaceName: reservation.space.name, occupiedUntil: res.occupiedUntil } });
+    } catch (err: any) {
+      const msg = err.response?.data?.message || 'Check-in failed';
+      Alert.alert('Error', msg);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (!reservation) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={BrandColors.primary} />
+      </View>
+    );
+  }
+
+  return (
+    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+
+      {/* Left Aligned Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Booking Confirmed</Text>
+      </View>
+
+      <View style={styles.content}>
+        {/* Green Square Success Icon */}
+        <View style={styles.successBox}>
+          <Ionicons name="checkmark" size={48} color="white" />
+        </View>
+
+        <Text style={styles.title}>You're all set!</Text>
+        <Text style={styles.subtitle}>{reservation.space.name} Â· {reservation.space.floor}</Text>
+        <Text style={styles.subtitle}>Today Â· {reservation.startTime.substring(0, 5)}</Text>
+
+        <TouchableOpacity style={styles.linkWrapper} onPress={() => router.replace('/(tabs)/myspace' as any)}>
+          <Text style={styles.linkText}>View My Bookings</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.backBtn} onPress={() => router.replace('/' as any)} activeOpacity={0.7}>
+          <Text style={styles.backBtnText}>Back to Map</Text>
+        </TouchableOpacity>
+
+        {/* Dashed QR Box */}
+        <View style={styles.qrSection}>
+          <Text style={styles.qrTitle}>SHOW THIS AT THE DESK TO CHECK IN</Text>
+          <View style={styles.qrBox}>
+            <QRCode value={reservation.code || 'UNKNOWN'} size={100} color="#1E293B" backgroundColor="transparent" />
+          </View>
+          <Text style={{ marginTop: 16, fontSize: 16, fontWeight: '700', color: BrandColors.navy }}>
+            CODE: {reservation.code}
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.footer}>
+        <TouchableOpacity style={styles.checkInBtn} onPress={handleCheckIn} disabled={submitting} activeOpacity={0.8}>
+          {submitting ? <ActivityIndicator color="white" /> : <Text style={styles.checkInBtnText}>Check In Now</Text>}
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FFFFFF'
+  },
+  header: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    alignItems: 'flex-start'
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1E293B'
+  },
+  content: {
+    flex: 1,
+    alignItems: 'center',
+    paddingTop: 20,
+    paddingHorizontal: 20
+  },
+  successBox: {
+    backgroundColor: '#00C853',
+    width: 64,
+    height: 64,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#1E293B',
+    marginBottom: 12
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#64748B',
+    marginBottom: 4
+  },
+  linkWrapper: {
+    marginTop: 24,
+    marginBottom: 24,
+    padding: 8
+  },
+  linkText: {
+    fontSize: 15,
+    color: BrandColors.primary,
+    fontWeight: '700'
+  },
+  backBtn: {
+    width: '100%',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center'
+  },
+  backBtnText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1E293B'
+  },
+  qrSection: {
+    alignItems: 'center',
+    marginTop: 40
+  },
+  qrTitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#64748B',
+    marginBottom: 16,
+    letterSpacing: 0.5
+  },
+  qrBox: {
+    width: 140,
+    height: 140,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    borderStyle: 'dashed',
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  footer: {
+    paddingHorizontal: 20,
+    paddingBottom: 30
+  },
+  checkInBtn: {
+    backgroundColor: BrandColors.primary,
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center'
+  },
+  checkInBtnText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '700'
+  }
+});
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { Colors, BrandColors } from '@/constants/theme';
+import { Icons } from '../icons';
+import { ReservationResponse } from '../types';
+import { cancelReservation } from '../api/reservations';
+
+export default function CancelReservationScreen() {
+  const router = useRouter();
+  const params = useLocalSearchParams();
+  const insets = useSafeAreaInsets();
+  
+  const reservation: ReservationResponse = JSON.parse(params.data as string);
+
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleCancel = async () => {
+    try {
+      setSubmitting(true);
+      await cancelReservation(reservation.id);
+      router.back(); // Returns to My Reservations which will refresh on focus
+    } catch (err: any) {
+      Alert.alert('Error', err.response?.data?.message || 'Failed to cancel reservation');
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Ionicons name={Icons.back} size={24} color={Colors.light.text} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Cancel Reservation</Text>
+        <View style={{ width: 32 }} />
+      </View>
+
+      <View style={styles.content}>
+        <View style={styles.card}>
+          <Text style={styles.spaceName}>{reservation.space.name}</Text>
+          <Text style={styles.spaceFloor}>{reservation.space.floor}</Text>
+          <View style={styles.badgeWrapper}>
+             <Text style={styles.badgeText}>{reservation.status}</Text>
+          </View>
+        </View>
+
+        <Text style={styles.confirmTitle}>ARE YOU SURE?</Text>
+        <Text style={styles.confirmText}>You'll lose this time slot and it may be booked by someone else. This can't be undone.</Text>
+      </View>
+
+      <View style={styles.footer}>
+        <TouchableOpacity style={styles.cancelBtn} onPress={handleCancel} disabled={submitting}>
+          {submitting ? <ActivityIndicator color="white" /> : <Text style={styles.cancelBtnText}>Cancel Reservation</Text>}
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.keepBtn} onPress={() => router.back()} disabled={submitting}>
+          <Text style={styles.keepBtnText}>Keep Reservation</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: Colors.light.background },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12 },
+  backButton: { padding: 4 },
+  headerTitle: { fontSize: 18, fontWeight: '600', color: Colors.light.text },
+  content: { flex: 1, padding: 20 },
+  card: { backgroundColor: 'white', padding: 20, borderRadius: 12, marginBottom: 30, borderWidth: 1, borderColor: Colors.light.backgroundSelected, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 5, elevation: 2 },
+  spaceName: { fontSize: 24, fontWeight: '700', marginBottom: 4 },
+  spaceFloor: { fontSize: 14, color: Colors.light.textSecondary, marginBottom: 12 },
+  badgeWrapper: { alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4, backgroundColor: '#FFF9E6' },
+  badgeText: { fontSize: 12, fontWeight: '700', color: BrandColors.warning },
+  confirmTitle: { fontSize: 14, fontWeight: '700', color: Colors.light.text, marginBottom: 8 },
+  confirmText: { fontSize: 16, color: Colors.light.textSecondary, lineHeight: 24 },
+  footer: { padding: 20, paddingBottom: 40 },
+  cancelBtn: { backgroundColor: '#FFF0F0', borderRadius: 8, paddingVertical: 16, alignItems: 'center', marginBottom: 12 },
+  cancelBtnText: { color: BrandColors.danger, fontSize: 16, fontWeight: '700' },
+  keepBtn: { backgroundColor: Colors.light.backgroundElement, borderRadius: 8, paddingVertical: 16, alignItems: 'center' },
+  keepBtnText: { color: Colors.light.text, fontSize: 16, fontWeight: '600' }
+});
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { Colors, BrandColors } from '@/constants/theme';
+import { Icons } from '../icons';
+
+export default function CheckInScreen() {
+  const router = useRouter();
+  const params = useLocalSearchParams();
+  const insets = useSafeAreaInsets();
+  
+  const spaceName = params.spaceName as string;
+  const occupiedUntil = params.occupiedUntil as string;
+  const timeStr = occupiedUntil ? occupiedUntil.substring(0, 5) : '';
+
+  return (
+    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Checked In</Text>
+      </View>
+
+      <View style={styles.content}>
+        <Ionicons name={Icons.checkedIn} size={64} color="#FFC107" style={{ marginBottom: 16 }} />
+        <Text style={styles.title}>You're checked in!</Text>
+        <Text style={styles.subtitle}>{spaceName}</Text>
+        <Text style={styles.subtitle}>Occupied until {timeStr}</Text>
+
+        <TouchableOpacity style={{ marginTop: 30 }} onPress={() => router.replace('/(tabs)/myspace' as any)}>
+          <Text style={styles.linkText}>View My Reservations</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={styles.backBtn} onPress={() => router.replace('/' as any)}>
+          <Text style={styles.backBtnText}>Back to Map</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: Colors.light.background },
+  header: { paddingHorizontal: 16, paddingVertical: 12, alignItems: 'center' },
+  headerTitle: { fontSize: 18, fontWeight: '600', color: Colors.light.text },
+  content: { flex: 1, alignItems: 'center', paddingTop: 60, paddingHorizontal: 20 },
+  title: { fontSize: 28, fontWeight: '700', marginBottom: 8, color: Colors.light.text },
+  subtitle: { fontSize: 16, color: Colors.light.textSecondary, marginBottom: 4 },
+  linkText: { fontSize: 16, color: BrandColors.primary, fontWeight: '600', marginBottom: 24 },
+  backBtn: { paddingVertical: 12, paddingHorizontal: 24, backgroundColor: Colors.light.backgroundElement, borderRadius: 8 },
+  backBtnText: { fontSize: 14, fontWeight: '600', color: Colors.light.text }
+});
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { Colors, BrandColors } from '@/constants/theme';
+import { useFeature1, FilterState } from '../context/Feature1Context';
+import { Zone } from '../types';
+import { saveFilter, getFilters } from '../api/reservations';
+import { Alert } from 'react-native';
+
+// Custom Switch component to match the exact Figma design
+const CustomSwitch = ({ value, onValueChange }: { value: boolean, onValueChange: (v: boolean) => void }) => (
+  <TouchableOpacity
+    activeOpacity={0.8}
+    onPress={() => onValueChange(!value)}
+    style={[
+      styles.customSwitch,
+      {
+        backgroundColor: value ? BrandColors.primary : '#E2E8F0',
+        alignItems: value ? 'flex-end' : 'flex-start'
+      }
+    ]}
+  >
+    <View style={styles.switchThumb} />
+  </TouchableOpacity>
+);
+
+export default function FiltersScreen() {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const { filters, setFilters } = useFeature1();
+
+  const [localFilters, setLocalFilters] = useState<FilterState>(filters);
+
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() => {
+    getFilters().then(data => {
+      if (data) {
+        setLocalFilters({
+          floor: data.floor || undefined,
+          zone: data.zone ? data.zone.split(',') : [],
+          hasPower: data.hasPower !== null ? data.hasPower : undefined,
+          hasPc: data.hasPc !== null ? data.hasPc : undefined,
+        });
+      }
+    }).catch(e => {
+      console.log('Error loading filter', e);
+      if (typeof window !== 'undefined') window.alert('Error\n\nFailed to load saved filters.');
+      else Alert.alert('Error', 'Failed to load saved filters.');
+    }).finally(() => setLoading(false));
+  }, []);
+
+  const handleSaveFilter = async () => {
+    try {
+      setLoading(true);
+      await saveFilter({
+        floor: localFilters.floor || null,
+        zone: localFilters.zone.length > 0 ? localFilters.zone.join(',') : null,
+        hasPower: localFilters.hasPower !== undefined ? localFilters.hasPower : null,
+        hasPc: localFilters.hasPc !== undefined ? localFilters.hasPc : null
+      });
+      if (typeof window !== 'undefined') window.alert('Success\n\nFilters successfully saved to database!');
+      else Alert.alert('Success', 'Filters successfully saved to database!');
+    } catch (e) {
+      if (typeof window !== 'undefined') window.alert('Error\n\nFailed to save filters.');
+      else Alert.alert('Error', 'Failed to save filters.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Matched exactly to the screenshot
+  const floors = ['Floor 3 (Group)', 'Floor 1 (Quiet)', 'Floor 2 (Silent Pods)'];
+  const zones: { label: string, value: Zone }[] = [
+    { label: 'Group Study Zone', value: 'GROUP_STUDY' },
+    { label: 'Silent Study Zone', value: 'SILENT_STUDY' },
+    { label: 'Reading Room Zone', value: 'READING_ROOM' }
+  ];
+
+  const handleApply = () => {
+    setFilters(localFilters);
+    router.back();
+  };
+
+  const toggleZone = (z: Zone) => {
+    const current = localFilters.zone;
+    if (current.includes(z)) {
+      setLocalFilters({ ...localFilters, zone: current.filter(x => x !== z) });
+    } else {
+      setLocalFilters({ ...localFilters, zone: [...current, z] });
+    }
+  };
+
+  return (
+    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={20} color="#1E293B" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Filters</Text>
+      </View>
+
+      <ScrollView style={styles.content} contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+
+        {/* SELECT FLOOR */}
+        <Text style={styles.sectionTitle}>SELECT FLOOR</Text>
+        {floors.map(f => {
+          const isActive = localFilters.floor === f;
+          return (
+            <TouchableOpacity
+              key={f}
+              style={[styles.floorCard, isActive ? styles.floorCardActive : styles.floorCardInactive]}
+              onPress={() => setLocalFilters({ ...localFilters, floor: isActive ? undefined : f })}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.label}>{f}</Text>
+              <View style={[styles.radioOuter, isActive ? styles.radioActive : styles.radioInactive]}>
+                {isActive && <View style={styles.radioInner} />}
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+
+        {/* AMENITIES */}
+        <Text style={[styles.sectionTitle, { marginTop: 24 }]}>AMENITIES</Text>
+        <View style={styles.toggleRow}>
+          <Text style={styles.label}>Power Outlet</Text>
+          <CustomSwitch
+            value={localFilters.hasPower || false}
+            onValueChange={v => setLocalFilters({ ...localFilters, hasPower: v ? true : undefined })}
+          />
+        </View>
+        <View style={styles.toggleRow}>
+          <Text style={styles.label}>Desktop PC</Text>
+          <CustomSwitch
+            value={localFilters.hasPc || false}
+            onValueChange={v => setLocalFilters({ ...localFilters, hasPc: v ? true : undefined })}
+          />
+        </View>
+
+        {/* ZONE (SELECT ANY) */}
+        <Text style={[styles.sectionTitle, { marginTop: 24 }]}>ZONE (SELECT ANY)</Text>
+        {zones.map(z => (
+          <View key={z.value} style={styles.toggleRow}>
+            <Text style={styles.label}>{z.label}</Text>
+            <CustomSwitch
+              value={localFilters.zone.includes(z.value)}
+              onValueChange={() => toggleZone(z.value)}
+            />
+          </View>
+        ))}
+      </ScrollView>
+
+      {/* Footer */}
+      <View style={styles.footer}>
+        <TouchableOpacity style={styles.applyBtn} onPress={handleApply} activeOpacity={0.8}>
+          <Text style={styles.applyBtnText}>Apply Filters</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.applyBtn, { backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', marginTop: 12 }]} onPress={handleSaveFilter} activeOpacity={0.8} disabled={loading}>
+          <Text style={[styles.applyBtnText, { color: loading ? '#94A3B8' : BrandColors.navy }]}>{loading ? 'Saving...' : 'Save Filters'}</Text>
+        </TouchableOpacity>
+      </View>
+
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FFFFFF'
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16
+  },
+  backButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F8FAFC', // Light gray circle from the design
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1E293B' // Dark Navy
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 20
+  },
+  sectionTitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#64748B',
+    marginBottom: 16,
+    letterSpacing: 0.5
+  },
+  floorCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 12
+  },
+  floorCardActive: {
+    borderColor: BrandColors.primary,
+    backgroundColor: '#FFF7ED' // Very light orange background
+  },
+  floorCardInactive: {
+    borderColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF'
+  },
+  label: {
+    fontSize: 15,
+    color: '#1E293B'
+  },
+  radioOuter: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  radioActive: {
+    borderColor: BrandColors.primary,
+  },
+  radioInactive: {
+    borderColor: '#E2E8F0',
+  },
+  radioInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: BrandColors.primary
+  },
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    marginBottom: 8
+  },
+  customSwitch: {
+    width: 46,
+    height: 26,
+    borderRadius: 13,
+    padding: 2,
+    justifyContent: 'center'
+  },
+  switchThumb: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2
+  },
+  footer: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: '#FFFFFF',
+    paddingBottom: 30
+  },
+  applyBtn: {
+    backgroundColor: BrandColors.primary,
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center'
+  },
+  applyBtnText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '700'
+  }
+});
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, RefreshControl, Alert } from 'react-native';
+import { useRouter, useFocusEffect } from 'expo-router';
+import { Colors, BrandColors } from '@/constants/theme';
+import { useAuth } from '@/context/AuthContext';
+import { getMyReservations, updateSlot } from '../api/reservations';
+import { ReservationResponse } from '../types';
+
+export default function MyReservationsScreen() {
+  const router = useRouter();
+  const { isGuest, logout } = useAuth();
+  
+  const [reservations, setReservations] = useState<ReservationResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadData = useCallback(async () => {
+    try {
+      setError(null);
+      const res = await getMyReservations();
+      setReservations(res);
+    } catch (err: any) {
+      if (err.message?.includes('timeout') || err.message?.includes('Network')) {
+        setError('Server is waking up, please try again');
+      } else {
+        setError('Failed to load reservations');
+      }
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (isGuest) {
+        return; // Don't try to load reservations for guests
+      }
+      setLoading(true);
+      loadData();
+    }, [isGuest, loadData])
+  );
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadData();
+  };
+
+  if (isGuest) {
+    return (
+      <View style={[styles.container, { alignItems: 'center', justifyContent: 'center', padding: 20 }]}>
+        <Text style={{ fontSize: 24, fontWeight: '700', color: Colors.light.text, marginBottom: 8 }}>Guest Mode</Text>
+        <Text style={{ fontSize: 16, color: Colors.light.textSecondary, textAlign: 'center', marginBottom: 20 }}>
+          Guests cannot make or view reservations. Please log in with a student or staff account.
+        </Text>
+        <TouchableOpacity style={styles.retryBtn} onPress={() => { logout(); router.replace('/'); }}>
+          <Text style={styles.retryText}>Go to Login</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  const [editingId, setEditingId] = useState<number | null>(null);
+
+  const handleEditTime = async (r: ReservationResponse) => {
+    try {
+      setEditingId(r.id);
+      // Mocking the new time slot for demo purposes as there is no date picker UI yet
+      await updateSlot(r.id, r.reservationDate, '10:00:00', '11:00:00');
+      if (typeof window !== 'undefined') window.alert('Success\n\nReservation time updated successfully!');
+      else Alert.alert('Success', 'Reservation time updated successfully!');
+      loadData(); // Refresh the list
+    } catch (e: any) {
+      if (e.response?.status === 409) {
+        if (typeof window !== 'undefined') window.alert('Conflict\n\nThis time slot is already booked. Please try another time.');
+        else Alert.alert('Conflict', 'This time slot is already booked. Please try another time.');
+      } else {
+        if (typeof window !== 'undefined') window.alert('Error\n\nFailed to update reservation time.');
+        else Alert.alert('Error', 'Failed to update reservation time.');
+      }
+    } finally {
+      setEditingId(null);
+    }
+  };
+
+  const renderContent = () => {
+    if (loading) return <ActivityIndicator size="large" color={BrandColors.primary} style={{ marginTop: 50 }} />;
+    if (error) return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity style={styles.retryBtn} onPress={loadData}><Text style={styles.retryText}>Retry</Text></TouchableOpacity>
+      </View>
+    );
+
+    if (reservations.length === 0) return <Text style={styles.emptyText}>You have no upcoming reservations.</Text>;
+
+    return reservations.map(r => {
+      const isReserved = r.status === 'RESERVED';
+      const timeStr = r.startTime.substring(0, 5);
+      // Determine if today or tomorrow
+      const todayStr = new Date().toISOString().split('T')[0];
+      const dateDisplay = r.reservationDate === todayStr ? 'Today' : r.reservationDate;
+
+      return (
+        <View key={r.id} style={styles.card}>
+          <View style={styles.cardHeader}>
+            <View>
+              <Text style={styles.spaceName}>{r.space.name}</Text>
+              <Text style={styles.spaceDetail}>{r.space.floor} | {dateDisplay} - {timeStr}</Text>
+            </View>
+            <View style={[styles.badgeWrapper, !isReserved && styles.badgeWrapperGreen]}>
+              <Text style={[styles.badgeText, !isReserved && styles.badgeTextGreen]}>{r.status}</Text>
+            </View>
+          </View>
+          
+          {isReserved && (
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <TouchableOpacity 
+                style={[styles.cancelBtn, { flex: 1, backgroundColor: '#E0F2FE' }]}
+                onPress={() => handleEditTime(r)}
+                disabled={editingId === r.id}
+              >
+                <Text style={[styles.cancelBtnText, { color: editingId === r.id ? '#94A3B8' : '#0284C7' }]}>
+                  {editingId === r.id ? 'Saving...' : 'Edit Time'}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.cancelBtn, { flex: 1 }]}
+                onPress={() => router.push({ pathname: '/feature1/cancel', params: { data: JSON.stringify(r) } })}
+              >
+                <Text style={styles.cancelBtnText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      );
+    });
+  };
+
+  return (
+    <ScrollView 
+      style={styles.container}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+    >
+      <View style={{ padding: 16 }}>
+        {renderContent()}
+      </View>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: Colors.light.background },
+  errorContainer: { marginTop: 40, alignItems: 'center' },
+  errorText: { color: BrandColors.danger, marginBottom: 16 },
+  retryBtn: { padding: 12, backgroundColor: BrandColors.primary, borderRadius: 8 },
+  retryText: { color: 'white', fontWeight: '600' },
+  emptyText: { textAlign: 'center', marginTop: 40, color: Colors.light.textSecondary },
+  card: { backgroundColor: 'white', padding: 16, borderRadius: 12, marginBottom: 16, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 5, elevation: 2 },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 },
+  spaceName: { fontSize: 18, fontWeight: '700', marginBottom: 4 },
+  spaceDetail: { fontSize: 14, color: Colors.light.textSecondary },
+  badgeWrapper: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4, backgroundColor: '#FFF9E6' },
+  badgeWrapperGreen: { backgroundColor: '#E6F4EA' },
+  badgeText: { fontSize: 10, fontWeight: '700', color: BrandColors.warning },
+  badgeTextGreen: { color: BrandColors.success },
+  cancelBtn: { backgroundColor: '#FFF0F0', paddingVertical: 12, borderRadius: 8, alignItems: 'center' },
+  cancelBtnText: { color: BrandColors.danger, fontWeight: '600', fontSize: 14 }
+});
+import { StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ThemedText } from '@/components/themed-text';
+import { ThemedView } from '@/components/themed-view';
+import { Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
+
+/**
+ * Placeholder for Feature 1.
+ * Replace this file with the actual screens once development begins.
+ * Rename the feature folder to the real feature name (e.g. book-search/).
+ */
+export default function PlaceholderScreen() {
+  const theme = useTheme();
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
+      <ThemedView style={styles.container}>
+        <ThemedText type="subtitle">Feature 1</ThemedText>
+        <ThemedView type="backgroundElement" style={styles.card}>
+          <ThemedText type="small" themeColor="textSecondary">
+            ðŸš§ Placeholder â€” Feature 1 screens go in{'\n'}
+            src/features/feature1/screens/
+          </ThemedText>
+        </ThemedView>
+      </ThemedView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: Spacing.four, gap: Spacing.three },
+  card: { padding: Spacing.four, borderRadius: Spacing.three },
+});
+import React, { useState } from 'react';
+import { View, StyleSheet, ScrollView, Text, TouchableOpacity, Switch, Alert } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SymbolView } from 'expo-symbols';
+import { BrandColors, Spacing, Radius } from '@/constants/theme';
+import { useAuth } from '@/context/AuthContext';
+import { router } from 'expo-router';
+
+export default function ProfileScreen() {
+  const insets = useSafeAreaInsets();
+  const { user, isGuest, logout } = useAuth();
+  
+  const [pushEnabled, setPushEnabled] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
+
+  const handleLogout = async () => {
+    await logout();
+    router.replace('/(auth)/login');
+  };
+
+  const handleLogin = () => {
+    logout().then(() => {
+      router.replace('/(auth)/login');
+    });
+  };
+
+  return (
+    <ScrollView 
+      style={styles.container} 
+      contentContainerStyle={[styles.contentContainer, { paddingTop: insets.top + Spacing.four }]}
+    >
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <SymbolView name="arrow.left" size={20} tintColor={BrandColors.navy} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>My Profile</Text>
+      </View>
+
+      <View style={styles.profileCard}>
+        <View style={styles.avatarCircle}>
+          <SymbolView name="person.fill" size={32} tintColor={BrandColors.primary} />
+        </View>
+        <View style={styles.profileInfo}>
+          <Text style={styles.userName}>{isGuest ? 'Guest User' : user?.name || 'Unknown'}</Text>
+          <Text style={styles.userEmail}>{isGuest ? 'Not logged in' : user?.email || 'No email provided'}</Text>
+          <View style={styles.roleBadge}>
+            <Text style={styles.roleText}>{isGuest ? 'GUEST' : user?.role}</Text>
+          </View>
+        </View>
+      </View>
+
+      <Text style={styles.sectionTitle}>APP SETTINGS</Text>
+      <View style={styles.settingsCard}>
+        <View style={styles.settingRow}>
+          <View style={styles.settingLabelRow}>
+            <SymbolView name="bell.fill" size={20} tintColor="#64748B" />
+            <Text style={styles.settingLabel}>Push Notifications</Text>
+          </View>
+          <Switch 
+            value={pushEnabled} 
+            onValueChange={setPushEnabled} 
+            trackColor={{ false: '#E2E8F0', true: BrandColors.orange }}
+          />
+        </View>
+        <View style={styles.settingDivider} />
+        <View style={styles.settingRow}>
+          <View style={styles.settingLabelRow}>
+            <SymbolView name="moon.fill" size={20} tintColor="#64748B" />
+            <Text style={styles.settingLabel}>Dark Mode</Text>
+          </View>
+          <Switch 
+            value={darkMode} 
+            onValueChange={setDarkMode} 
+            trackColor={{ false: '#E2E8F0', true: BrandColors.orange }}
+          />
+        </View>
+      </View>
+
+      {isGuest ? (
+        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+          <Text style={styles.loginButtonText}>Log In or Register</Text>
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutButtonText}>Log Out</Text>
+        </TouchableOpacity>
+      )}
+
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+  },
+  contentContainer: {
+    paddingHorizontal: Spacing.four,
+    paddingBottom: Spacing.six,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.six,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: Spacing.three,
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: BrandColors.navy,
+  },
+  profileCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: Radius.lg,
+    padding: Spacing.five,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginBottom: Spacing.six,
+  },
+  avatarCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#FEF3C7',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: Spacing.four,
+  },
+  profileInfo: {
+    flex: 1,
+  },
+  userName: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: BrandColors.navy,
+    marginBottom: 2,
+  },
+  userEmail: {
+    fontSize: 14,
+    color: '#64748B',
+    marginBottom: Spacing.two,
+  },
+  roleBadge: {
+    backgroundColor: BrandColors.navy,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  roleText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#64748B',
+    marginBottom: Spacing.three,
+    letterSpacing: 0.5,
+    marginLeft: Spacing.two,
+  },
+  settingsCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: Radius.lg,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginBottom: Spacing.six,
+  },
+  settingRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: Spacing.four,
+  },
+  settingLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  settingLabel: {
+    fontSize: 16,
+    color: BrandColors.navy,
+    marginLeft: Spacing.three,
+  },
+  settingDivider: {
+    height: 1,
+    backgroundColor: '#E2E8F0',
+    marginLeft: Spacing.four + 20 + Spacing.three,
+  },
+  logoutButton: {
+    backgroundColor: '#FEE2E2',
+    height: 52,
+    borderRadius: Radius.md,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoutButtonText: {
+    color: BrandColors.danger,
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  loginButton: {
+    backgroundColor: BrandColors.orange,
+    height: 52,
+    borderRadius: Radius.md,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loginButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+  }
+});
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { Colors, BrandColors } from '@/constants/theme';
+import { useAuth } from '@/context/AuthContext';
+import { Icons } from '../icons';
+import { getSpaceDetail } from '../api/spaces';
+import { createReservation } from '../api/reservations';
+import { SpaceDetailDTO, TimeSlotDTO } from '../types';
+
+export default function ReservationScreen() {
+  const router = useRouter();
+  const params = useLocalSearchParams();
+  const insets = useSafeAreaInsets();
+  const { isGuest, logout } = useAuth();
+  
+  const spaceId = Number(params.spaceId);
+
+  const [detail, setDetail] = useState<SpaceDetailDTO | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<TimeSlotDTO | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (isGuest) {
+        logout();
+      }
+    }, [isGuest, logout])
+  );
+
+  const loadData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await getSpaceDetail(spaceId);
+      setDetail(res);
+      setSelectedSlot(null);
+    } catch (err: any) {
+      if (err.message?.includes('timeout') || err.message?.includes('Network')) {
+        setError('Server is waking up, please try again');
+      } else {
+        setError('Failed to load space details');
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [spaceId]);
+
+  useEffect(() => {
+    if (!isGuest) {
+      loadData();
+    }
+  }, [isGuest, loadData]);
+
+  const handleConfirm = async () => {
+    if (!selectedSlot) return;
+    try {
+      setSubmitting(true);
+      // Adjust to local timezone to prevent booking yesterday's date if past midnight UTC
+      const localDate = new Date();
+      localDate.setMinutes(localDate.getMinutes() - localDate.getTimezoneOffset());
+      const todayStr = localDate.toISOString().split('T')[0];
+      const res = await createReservation({
+        spaceId,
+        date: todayStr,
+        startTime: selectedSlot.startTime,
+        endTime: selectedSlot.endTime
+      });
+      router.replace({ pathname: '/feature1/booking-confirmed', params: { data: JSON.stringify(res) } });
+    } catch (err: any) {
+      let msg = 'Failed to create reservation';
+      if (err.response?.status === 409) {
+        msg = err.response.data?.message || 'Space already booked';
+      }
+      if (typeof window !== 'undefined') {
+        window.alert(`Booking Failed\n\n${msg}`);
+        loadData();
+      } else {
+        Alert.alert('Booking Failed', msg, [{ text: 'OK', onPress: () => loadData() }]);
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (isGuest) return <View style={styles.container} />;
+
+  return (
+    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Ionicons name={Icons.back} size={24} color={Colors.light.text} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Booking</Text>
+        <View style={{ width: 32 }} />
+      </View>
+
+      <ScrollView style={styles.content}>
+        {loading ? (
+          <ActivityIndicator size="large" color={BrandColors.primary} style={{ marginTop: 50 }} />
+        ) : error ? (
+          <View style={{ alignItems: 'center', marginTop: 50 }}>
+            <Text style={{ color: BrandColors.danger, marginBottom: 16 }}>{error}</Text>
+            <TouchableOpacity style={styles.confirmBtn} onPress={loadData}><Text style={styles.confirmBtnText}>Retry</Text></TouchableOpacity>
+          </View>
+        ) : detail && (
+          <>
+            <View style={styles.card}>
+              <Text style={styles.spaceName}>{detail.space.name}</Text>
+              <Text style={styles.spaceFloor}>{detail.space.floor}</Text>
+              <View style={styles.badgeWrapper}>
+                 <Text style={[styles.badgeText, { color: detail.space.status === 'AVAILABLE' ? BrandColors.success : (detail.space.status === 'RESERVED' ? BrandColors.warning : BrandColors.danger) }]}>{detail.space.status}</Text>
+              </View>
+            </View>
+
+            <Text style={styles.sectionTitle}>TIME SLOT</Text>
+            <View style={styles.slotGrid}>
+              {detail.slots.map((slot, i) => {
+                const isActive = selectedSlot?.startTime === slot.startTime;
+                const timeStr = slot.startTime.substring(0, 5); // 10:00
+                const isPast = false; // Simplified, ideally check if past current time
+                const disabled = slot.isBooked || isPast;
+
+                return (
+                  <TouchableOpacity
+                    key={i}
+                    style={[styles.slotItem, isActive && styles.slotItemActive, disabled && styles.slotItemDisabled]}
+                    disabled={disabled}
+                    onPress={() => setSelectedSlot(slot)}
+                  >
+                    <Text style={[styles.slotText, isActive && styles.slotTextActive, disabled && styles.slotTextDisabled]}>{timeStr}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </>
+        )}
+      </ScrollView>
+
+      {!loading && !error && (
+        <View style={styles.footer}>
+          <TouchableOpacity 
+            style={[styles.confirmBtn, (!selectedSlot || submitting) && styles.confirmBtnDisabled]} 
+            onPress={handleConfirm}
+            disabled={!selectedSlot || submitting}
+          >
+            {submitting ? <ActivityIndicator color="white" /> : <Text style={styles.confirmBtnText}>Confirm Booking</Text>}
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: Colors.light.background },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12 },
+  backButton: { padding: 4 },
+  headerTitle: { fontSize: 18, fontWeight: '600', color: Colors.light.text },
+  content: { flex: 1, padding: 20 },
+  card: { backgroundColor: 'white', padding: 20, borderRadius: 12, marginBottom: 30, borderWidth: 1, borderColor: Colors.light.backgroundSelected, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 5, elevation: 2 },
+  spaceName: { fontSize: 24, fontWeight: '700', marginBottom: 4 },
+  spaceFloor: { fontSize: 14, color: Colors.light.textSecondary, marginBottom: 12 },
+  badgeWrapper: { alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4, backgroundColor: '#F8F9FA' },
+  badgeText: { fontSize: 12, fontWeight: '700' },
+  sectionTitle: { fontSize: 12, fontWeight: '700', color: Colors.light.textSecondary, marginBottom: 16, letterSpacing: 0.5 },
+  slotGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  slotItem: { paddingVertical: 12, paddingHorizontal: 20, borderRadius: 24, borderWidth: 1, borderColor: Colors.light.backgroundSelected, backgroundColor: 'white' },
+  slotItemActive: { backgroundColor: BrandColors.primary, borderColor: BrandColors.primary },
+  slotItemDisabled: { backgroundColor: Colors.light.backgroundElement, borderColor: Colors.light.backgroundElement },
+  slotText: { fontSize: 14, fontWeight: '600', color: Colors.light.text },
+  slotTextActive: { color: 'white' },
+  slotTextDisabled: { color: Colors.light.textSecondary },
+  footer: { padding: 20, paddingBottom: 40, borderTopWidth: 1, borderTopColor: Colors.light.backgroundSelected },
+  confirmBtn: { backgroundColor: BrandColors.primary, borderRadius: 8, paddingVertical: 16, alignItems: 'center' },
+  confirmBtnDisabled: { opacity: 0.5 },
+  confirmBtnText: { color: 'white', fontSize: 16, fontWeight: '700' }
+});
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, RefreshControl, ActivityIndicator, TextInput, Alert } from 'react-native';
+import { useRouter, useFocusEffect, useNavigation } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '@/context/AuthContext';
+import { useFeature1 } from '../context/Feature1Context';
+import { Icons } from '../icons';
+import { getSpaces } from '../api/spaces';
+import { createAlert, getFilters } from '../api/reservations';
+import { SpaceSummaryDTO } from '../types';
+
+// 60% white  |  30% orange  |  10% blue
+const PALETTE = {
+  white: '#FFFFFF',       // 60% - screen and card surfaces
+  paleOrange: '#FFF4EA',  // 60% - soft tint for inputs and toggle track
+  line: '#F3E3D3',        // card borders
+  orange: '#EA6A0C',      // 30% - active states, buttons, accents
+  navy: '#132455',        // 10% - titles and small details
+  muted: '#64748B',
+  danger: '#DC2626',
+};
+
+type ViewMode = 'list' | 'floor_plan';
+
+export default function SpaceMapScreen() {
+  const router = useRouter();
+  const navigation = useNavigation();
+  const { user, isGuest } = useAuth();
+  const { filters, setFilters } = useFeature1();
+
+  const [mode, setMode] = useState<ViewMode>('list'); // Default to list view
+  const [spaces, setSpaces] = useState<SpaceSummaryDTO[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      navigation.setOptions({
+        title: mode === 'list' ? 'Space Map' : 'Floor Plan', // Dynamic title based on mode
+      });
+    }, [navigation, isGuest, user, mode])
+  );
+
+  const loadData = useCallback(async () => {
+    try {
+      setError(null);
+      const res = await getSpaces(filters);
+      setSpaces(res);
+    } catch (err: any) {
+      if (err.message?.includes('timeout') || err.message?.includes('Network')) {
+        setError('Server is waking up, please try again');
+      } else {
+        setError('Failed to load data');
+      }
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [filters]);
+
+  useFocusEffect(
+    useCallback(() => {
+      setLoading(true);
+      // Auto-load saved filters from database once
+      if (!isGuest && Object.keys(filters).length === 0) {
+        getFilters().then(data => {
+          if (data) {
+            setFilters({
+              floor: data.floor || undefined,
+              zone: data.zone ? data.zone.split(',') : [],
+              hasPower: data.hasPower !== null ? data.hasPower : undefined,
+              hasPc: data.hasPc !== null ? data.hasPc : undefined,
+            });
+          }
+        }).catch(e => console.log('Failed to auto-load filters', e))
+          .finally(() => loadData());
+      } else {
+        loadData();
+      }
+
+      const interval = setInterval(loadData, 30000);
+      return () => clearInterval(interval);
+    }, [loadData, isGuest])
+  );
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadData();
+  };
+
+  // Status Pill Styles for List View
+  const getListStyles = (status: string) => {
+    switch (status) {
+      case 'AVAILABLE': return { text: '#065F46', bg: '#D1FAE5', bar: '#22C55E' };
+      case 'OCCUPIED': return { text: '#DC2626', bg: '#FEE2E2', bar: '#EF4444' };
+      case 'RESERVED': return { text: '#B45309', bg: '#FEF3C7', bar: '#F59E0B' };
+      default: return { text: PALETTE.muted, bg: '#F1F5F9', bar: PALETTE.line };
+    }
+  };
+
+  // Status Colors for Floor Plan View (Matches screenshot exactly)
+  const getFloorPlanColors = (status: string) => {
+    switch (status) {
+      case 'AVAILABLE': return { border: '#22C55E', bg: '#DCFCE7', text: '#16A34A' };
+      case 'OCCUPIED': return { border: '#EF4444', bg: '#FEE2E2', text: '#DC2626' };
+      case 'RESERVED': return { border: '#F59E0B', bg: '#FEF3C7', text: '#D97706' };
+      default: return { border: '#E2E8F0', bg: '#F8FAFC', text: '#64748B' };
+    }
+  };
+
+  const renderToggle = () => (
+    <View style={styles.toggleContainer}>
+      <TouchableOpacity
+        style={[styles.toggleBtn, mode === 'list' && styles.toggleActive]}
+        onPress={() => setMode('list')}
+      >
+        <Ionicons
+          name={Icons.listView}
+          size={18}
+          color={mode === 'list' ? PALETTE.white : PALETTE.muted}
+          style={{ marginBottom: 4 }}
+        />
+        <Text style={[styles.toggleText, mode === 'list' && styles.toggleTextActive]}>List View</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[styles.toggleBtn, mode === 'floor_plan' && styles.toggleActive]}
+        onPress={() => setMode('floor_plan')}
+      >
+        <Ionicons
+          name={Icons.floorPlan}
+          size={18}
+          color={mode === 'floor_plan' ? PALETTE.white : PALETTE.muted}
+          style={{ marginBottom: 4 }}
+        />
+        <Text style={[styles.toggleText, mode === 'floor_plan' && styles.toggleTextActive]}>Floor Plan</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderSearchBar = () => (
+    <View style={styles.searchContainer}>
+      <Ionicons name="search-outline" size={20} color={PALETTE.navy} style={styles.searchIcon} />
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Search zones or desks..."
+        placeholderTextColor={PALETTE.muted}
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+      />
+    </View>
+  );
+
+  const renderSectionHeader = () => (
+    <View style={styles.sectionHeader}>
+      <Text style={styles.sectionTitle}>Floor 3 (Group)</Text>
+      <TouchableOpacity style={styles.filterBtn} onPress={() => router.push('/feature1/filters')}>
+        <Text style={styles.filterText}>Filters</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const handleNotify = async (space: SpaceSummaryDTO) => {
+    try {
+      await createAlert(space.zone);
+      if (typeof window !== 'undefined') window.alert(`Success!\n\nPreferred-zone seat alert for ${space.name} created!`);
+      else Alert.alert('Success', `Preferred-zone seat alert for ${space.name} created!`);
+    } catch (e) {
+      if (typeof window !== 'undefined') window.alert('Error\n\nFailed to create seat alert.');
+      else Alert.alert('Error', 'Failed to create seat alert.');
+    }
+  };
+
+  const renderContent = () => {
+    if (loading) return <ActivityIndicator size="large" color={PALETTE.orange} style={{ marginTop: 50 }} />;
+    if (error) return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity style={styles.retryBtn} onPress={() => { setLoading(true); loadData(); }}>
+          <Text style={styles.retryText}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+
+    const filteredSpaces = spaces.filter(s =>
+      s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.floor.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    if (filteredSpaces.length === 0) return <Text style={styles.emptyText}>No spaces match your filters.</Text>;
+
+    if (mode === 'list') {
+      return filteredSpaces.map(s => {
+        const { text: textColor, bg: bgColor, bar: barColor } = getListStyles(s.status);
+        return (
+          <TouchableOpacity
+            key={s.id}
+            style={[styles.listCard, { borderLeftColor: barColor }]}
+            onPress={() => router.push({ pathname: '/feature1/reservation', params: { spaceId: s.id } })}
+          >
+            <View style={styles.listCardLeft}>
+              <Text style={styles.listCardTitle}>{s.name}</Text>
+              <Text style={styles.listCardSubtitle}>{s.floor} â€¢ Power</Text>
+            </View>
+            <View style={{ alignItems: 'flex-end' }}>
+              <View style={[styles.statusPill, { backgroundColor: bgColor, marginBottom: s.status !== 'AVAILABLE' ? 8 : 0 }]}>
+                <Text style={[styles.statusPillText, { color: textColor }]}>{s.status}</Text>
+              </View>
+              {s.status !== 'AVAILABLE' && (
+                <TouchableOpacity style={styles.notifyBtn} onPress={() => handleNotify(s)}>
+                  <Text style={styles.notifyText}>Notify me</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </TouchableOpacity>
+        );
+      });
+    }
+
+    // Floor Plan Grid View
+    return (
+      <View style={styles.grid}>
+        {filteredSpaces.map(s => {
+          const colors = getFloorPlanColors(s.status);
+          // Make rooms take full width, desks take half width
+          const isFullWidth = s.name.toLowerCase().includes('rm') || s.name.toLowerCase().includes('room');
+
+          return (
+            <TouchableOpacity
+              key={s.id}
+              style={[
+                styles.floorPlanTile,
+                {
+                  width: isFullWidth ? '100%' : '48%',
+                  backgroundColor: colors.bg,
+                  borderColor: colors.border
+                }
+              ]}
+              onPress={() => {
+                if (typeof window !== 'undefined') window.alert('Success\n\nDesk selected!');
+                else Alert.alert('Success', 'Desk selected!');
+                setTimeout(() => {
+                  router.push({ pathname: '/feature1/reservation', params: { spaceId: s.id } });
+                }, 500);
+              }}
+            >
+              <Text style={styles.floorPlanName}>{s.name}</Text>
+              <Text style={styles.floorPlanFloor}>
+                {s.floor}{isFullWidth ? ' Â· seats 6' : ''}
+              </Text>
+              <Text style={[styles.floorPlanStatus, { color: colors.text }]}>{s.status}</Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    );
+  };
+
+  return (
+    <ScrollView
+      style={styles.container}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={PALETTE.orange}
+          colors={[PALETTE.orange]}
+        />
+      }
+    >
+      <View style={{ padding: 16 }}>
+        {renderToggle()}
+
+        {/* Only show Search Bar and Filter Header in List Mode */}
+        {mode === 'list' && (
+          <>
+            {renderSearchBar()}
+            {renderSectionHeader()}
+          </>
+        )}
+
+        {/* Only show Legend in Floor Plan Mode */}
+        {mode === 'floor_plan' && (
+          <View style={styles.legendContainer}>
+            <Text style={styles.legendTextTitle}>TAP A SPACE TO VIEW DETAILS</Text>
+            <View style={styles.legendDots}>
+              <View style={styles.legendItem}><View style={[styles.dot, { backgroundColor: '#16A34A' }]} /><Text style={styles.legendLabel}>Available</Text></View>
+              <View style={styles.legendItem}><View style={[styles.dot, { backgroundColor: '#DC2626' }]} /><Text style={styles.legendLabel}>Occupied</Text></View>
+              <View style={styles.legendItem}><View style={[styles.dot, { backgroundColor: '#D97706' }]} /><Text style={styles.legendLabel}>Reserved</Text></View>
+            </View>
+          </View>
+        )}
+
+        {renderContent()}
+      </View>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: PALETTE.white,
+  },
+
+  // Toggle: pale orange track, solid orange active segment
+  toggleContainer: {
+    flexDirection: 'row',
+    backgroundColor: PALETTE.paleOrange,
+    borderRadius: 16,
+    padding: 5,
+    marginBottom: 20,
+  },
+  toggleBtn: {
+    flex: 1,
+    flexDirection: 'column',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  toggleActive: {
+    backgroundColor: PALETTE.orange,
+    shadowColor: PALETTE.orange,
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
+  },
+  toggleText: {
+    fontSize: 12,
+    color: PALETTE.muted,
+    fontWeight: '600',
+  },
+  toggleTextActive: {
+    color: PALETTE.white,
+  },
+
+  // Search
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: PALETTE.paleOrange,
+    borderWidth: 1,
+    borderColor: PALETTE.line,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    marginBottom: 20,
+  },
+  searchIcon: { marginRight: 10 },
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    color: PALETTE.navy,
+  },
+
+  // Section header
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: PALETTE.navy,
+  },
+  filterBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 7,
+    borderRadius: 16,
+    backgroundColor: PALETTE.orange,
+  },
+  filterText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: PALETTE.white,
+  },
+
+  // List cards
+  listCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: PALETTE.white,
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: PALETTE.line,
+    borderLeftWidth: 5,
+    marginBottom: 12,
+    shadowColor: PALETTE.orange,
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
+  },
+  listCardLeft: { flex: 1 },
+  listCardTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: PALETTE.navy,
+    marginBottom: 4,
+  },
+  listCardSubtitle: {
+    fontSize: 13,
+    color: PALETTE.muted,
+  },
+  statusPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+  },
+  statusPillText: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  notifyBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 14,
+    backgroundColor: PALETTE.orange,
+  },
+  notifyText: {
+    fontSize: 12,
+    color: PALETTE.white,
+    fontWeight: '700',
+  },
+
+  // Legend (floor plan)
+  legendContainer: {
+    marginBottom: 20,
+  },
+  legendTextTitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: PALETTE.navy,
+    marginBottom: 12,
+    letterSpacing: 0.5,
+  },
+  legendDots: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 6,
+  },
+  legendLabel: {
+    fontSize: 13,
+    color: PALETTE.navy,
+  },
+
+  // Floor plan grid
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  floorPlanTile: {
+    borderWidth: 1.5,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+  },
+  floorPlanName: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: PALETTE.navy,
+    marginBottom: 6,
+  },
+  floorPlanFloor: {
+    fontSize: 12,
+    color: PALETTE.muted,
+    marginBottom: 16,
+  },
+  floorPlanStatus: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+
+  // Empty and error states
+  emptyText: { textAlign: 'center', marginTop: 40, color: PALETTE.muted },
+  errorContainer: { marginTop: 40, alignItems: 'center' },
+  errorText: { color: PALETTE.danger, marginBottom: 16 },
+  retryBtn: { paddingVertical: 12, paddingHorizontal: 28, backgroundColor: PALETTE.orange, borderRadius: 12 },
+  retryText: { color: PALETTE.white, fontWeight: '700' },
+});
