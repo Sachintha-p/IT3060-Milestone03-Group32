@@ -1,18 +1,19 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, ActivityIndicator, Image, Text, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ActivityIndicator, Text, KeyboardAvoidingView, Platform, ScrollView, TextInput } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/context/AuthContext';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Colors, BrandColors, Spacing, Radius, FontSizes, FontWeights } from '@/constants/theme';
-import { SymbolView } from 'expo-symbols';
-import { TextInput } from 'react-native';
 
 export default function LoginScreen() {
-  const { login, loginAsGuest } = useAuth();
+  const { login } = useAuth();
+  const router = useRouter();
   const [portal, setPortal] = useState<'STUDENT' | 'STAFF_ADMIN'>('STUDENT');
   const [staffRole, setStaffRole] = useState<'LIBRARY_STAFF' | 'ADMIN'>('ADMIN');
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [validationErrors, setValidationErrors] = useState<{ identifier?: string, password?: string }>({});
@@ -45,12 +46,8 @@ export default function LoginScreen() {
     }
   };
 
-  const handleGuest = async () => {
-    try {
-      await loginAsGuest();
-    } catch (err: any) {
-      setError('Could not continue as guest');
-    }
+  const handleCreateAccount = () => {
+    router.push('/register'); // change to your create-user screen route
   };
 
   return (
@@ -67,7 +64,7 @@ export default function LoginScreen() {
 
         {/* Logo block */}
         <View style={styles.logoContainer}>
-          <SymbolView name="building.columns.fill" size={32} tintColor="#FFF" style={styles.logoIcon} />
+          <Ionicons name="library" size={44} color="#FFF" />
         </View>
 
         {/* Selector */}
@@ -100,17 +97,17 @@ export default function LoginScreen() {
         {/* Role Selection for Staff / Admin */}
         {!isStudent && (
           <View style={styles.roleSelectionContainer}>
-            <TouchableOpacity 
-              style={[styles.roleCard, staffRole === 'LIBRARY_STAFF' && styles.roleCardActive]} 
+            <TouchableOpacity
+              style={[styles.roleCard, staffRole === 'LIBRARY_STAFF' && styles.roleCardActive]}
               onPress={() => setStaffRole('LIBRARY_STAFF')}
               activeOpacity={0.8}
             >
               <Text style={[styles.roleCardText, staffRole === 'LIBRARY_STAFF' && styles.roleCardTextActive]}>Library Staff</Text>
               {staffRole === 'LIBRARY_STAFF' && <View style={styles.roleDot} />}
             </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={[styles.roleCard, staffRole === 'ADMIN' && styles.roleCardActive]} 
+
+            <TouchableOpacity
+              style={[styles.roleCard, staffRole === 'ADMIN' && styles.roleCardActive]}
               onPress={() => setStaffRole('ADMIN')}
               activeOpacity={0.8}
             >
@@ -123,10 +120,10 @@ export default function LoginScreen() {
         {/* Inputs */}
         <View style={styles.inputWrapper}>
           <View style={[styles.inputContainer, validationErrors.identifier ? styles.inputErrorBorder : null]}>
-            <SymbolView
-              name={isStudent ? "graduationcap.fill" : "person.fill"}
-              size={18}
-              tintColor={isStudent ? Colors.light.textSecondary : "#60A5FA"}
+            <Ionicons
+              name={isStudent ? "school" : "person"}
+              size={20}
+              color={isStudent ? Colors.light.textSecondary : "#60A5FA"}
               style={styles.inputIcon}
             />
             <TextInput
@@ -148,10 +145,10 @@ export default function LoginScreen() {
 
         <View style={styles.inputWrapper}>
           <View style={[styles.inputContainer, validationErrors.password ? styles.inputErrorBorder : null]}>
-            <SymbolView
-              name="lock.fill"
-              size={18}
-              tintColor={isStudent ? Colors.light.textSecondary : "#F59E0B"}
+            <Ionicons
+              name="lock-closed"
+              size={20}
+              color={isStudent ? Colors.light.textSecondary : "#F59E0B"}
               style={styles.inputIcon}
             />
             <TextInput
@@ -163,9 +160,12 @@ export default function LoginScreen() {
                 setPassword(text);
                 if (validationErrors.password) setValidationErrors({ ...validationErrors, password: undefined });
               }}
-              secureTextEntry
+              secureTextEntry={!showPassword}
               editable={!loading}
             />
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={{ padding: 4 }}>
+              <Ionicons name={showPassword ? "eye-off" : "eye"} size={20} color={Colors.light.textSecondary} />
+            </TouchableOpacity>
           </View>
           {validationErrors.password ? <Text style={styles.fieldError}>{validationErrors.password}</Text> : null}
         </View>
@@ -175,6 +175,7 @@ export default function LoginScreen() {
           style={[styles.loginButton, loading && styles.loginButtonDisabled]}
           onPress={handleLogin}
           disabled={loading}
+          activeOpacity={0.85}
         >
           {loading ? (
             <ActivityIndicator color="#FFF" />
@@ -183,11 +184,14 @@ export default function LoginScreen() {
           )}
         </TouchableOpacity>
 
-        {/* Guest Link */}
+        {/* Create Account (students only) */}
         {isStudent ? (
-          <TouchableOpacity style={styles.guestButton} onPress={handleGuest} disabled={loading}>
-            <Text style={styles.guestText}>Continue as Guest →</Text>
-          </TouchableOpacity>
+          <View style={styles.createRow}>
+            <Text style={styles.createText}>New to the library?</Text>
+            <TouchableOpacity onPress={handleCreateAccount} disabled={loading} activeOpacity={0.7}>
+              <Text style={styles.createLink}>Create Account</Text>
+            </TouchableOpacity>
+          </View>
         ) : null}
 
       </ScrollView>
@@ -202,63 +206,96 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
+    justifyContent: 'center',
     paddingHorizontal: Spacing.four,
-    paddingTop: 80, // rough match for safe area / top layout
+    paddingTop: 60,
+    paddingBottom: 48,
   },
+
+  // ---------- Header ----------
   headerTitle: {
+    alignSelf: 'stretch',
+    textAlign: 'center',
     color: BrandColors.navy,
     fontWeight: FontWeights.bold,
-    fontSize: FontSizes.lg,
-    marginBottom: Spacing.three,
+    fontSize: 26,
+    lineHeight: 32,
+    letterSpacing: 0.3,
+    marginBottom: Spacing.four,
   },
   logoContainer: {
-    width: 64,
-    height: 64,
+    width: 88,
+    height: 88,
+    alignSelf: 'center',
     backgroundColor: BrandColors.navy,
     borderRadius: Radius.lg,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: Spacing.five,
+    borderBottomWidth: 4,
+    borderBottomColor: BrandColors.orange,
+    shadowColor: BrandColors.navy,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.28,
+    shadowRadius: 16,
+    elevation: 10,
   },
-  logoIcon: {
-    // some shadow or tweak if needed
-  },
+
+  // ---------- Portal selector ----------
   selectorContainer: {
     flexDirection: 'row',
     backgroundColor: '#F8FAFC',
     borderRadius: Radius.md,
-    padding: 6,
+    padding: 5,
     marginBottom: Spacing.four,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   selectorTab: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: 12,
     alignItems: 'center',
     borderRadius: Radius.sm,
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   selectorTabActive: {
     backgroundColor: '#FFFFFF',
+    borderColor: '#E2E8F0',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
   },
   selectorText: {
     color: '#64748B',
     fontWeight: '600',
     fontSize: FontSizes.sm,
+    letterSpacing: 0.2,
   },
   selectorTextActive: {
-    color: '#0F172A',
+    color: BrandColors.navy,
     fontWeight: '700',
   },
+
+  // ---------- Errors ----------
   globalError: {
     color: BrandColors.danger,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: BrandColors.danger,
+    borderRadius: Radius.md,
+    paddingVertical: 10,
+    paddingHorizontal: Spacing.three,
     marginBottom: Spacing.three,
     textAlign: 'center',
     fontSize: FontSizes.sm,
+    fontWeight: '600',
+    overflow: 'hidden',
   },
+
+  // ---------- Staff role cards ----------
   roleSelectionContainer: {
     marginBottom: 4,
   },
@@ -267,46 +304,70 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: '#FFFFFF',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#E2E8F0',
     borderRadius: Radius.md,
     paddingHorizontal: Spacing.three,
-    height: 48,
+    height: 54,
     marginBottom: Spacing.three,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
+    elevation: 1,
   },
   roleCardActive: {
-    backgroundColor: '#FFF7ED', // light orange
+    backgroundColor: '#FFF7ED',
     borderColor: BrandColors.orange,
+    shadowColor: BrandColors.orange,
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
+    elevation: 3,
   },
   roleCardText: {
     fontSize: FontSizes.base,
     color: '#64748B',
+    fontWeight: '500',
   },
   roleCardTextActive: {
-    color: '#0F172A',
-    fontWeight: '600',
+    color: BrandColors.navy,
+    fontWeight: '700',
   },
   roleDot: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
     backgroundColor: BrandColors.orange,
+    borderWidth: 3,
+    borderColor: '#FFF7ED',
+    shadowColor: BrandColors.orange,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 4,
   },
+
+  // ---------- Inputs ----------
   inputWrapper: {
     marginBottom: Spacing.three,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC', 
+    backgroundColor: '#FFFFFF',
     borderRadius: Radius.md,
     paddingHorizontal: Spacing.three,
-    height: 48,
-    borderWidth: 1,
+    height: 54,
+    borderWidth: 1.5,
     borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
   },
   inputErrorBorder: {
     borderColor: BrandColors.danger,
+    backgroundColor: '#FFFFFF',
   },
   inputIcon: {
     marginRight: Spacing.two,
@@ -315,36 +376,58 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: FontSizes.base,
     color: Colors.light.text,
+    height: '100%',
+    paddingVertical: 0,
   },
   fieldError: {
     color: BrandColors.danger,
     fontSize: FontSizes.xs,
-    marginTop: 4,
-    marginLeft: 4,
+    fontWeight: '600',
+    marginTop: 6,
+    marginLeft: 6,
   },
+
+  // ---------- Sign in button ----------
   loginButton: {
     backgroundColor: BrandColors.orange,
-    height: 48,
+    height: 54,
     borderRadius: Radius.md,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: Spacing.two,
+    marginTop: Spacing.three,
+    shadowColor: BrandColors.orange,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    elevation: 8,
   },
   loginButtonDisabled: {
     opacity: 0.7,
+    shadowOpacity: 0.1,
   },
   loginButtonText: {
     color: '#FFF',
     fontSize: FontSizes.md,
-    fontWeight: FontWeights.semibold,
+    fontWeight: FontWeights.bold,
+    letterSpacing: 0.6,
   },
-  guestButton: {
-    marginTop: Spacing.four,
+
+  // ---------- Create account ----------
+  createRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
-    padding: Spacing.two,
+    marginTop: Spacing.four,
   },
-  guestText: {
-    color: Colors.light.textSecondary,
+  createText: {
+    color: '#64748B',
     fontSize: FontSizes.sm,
-  }
+    marginRight: 6,
+  },
+  createLink: {
+    color: BrandColors.orange,
+    fontSize: FontSizes.sm,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
 });

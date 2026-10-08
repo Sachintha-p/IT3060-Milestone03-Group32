@@ -1,21 +1,14 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
+import { Platform } from 'react-native';
 
 /**
  * Axios client pre-configured for the Smart Library backend.
- *
- * BASE_URL is set in .env (or .env.local):
- *   EXPO_PUBLIC_API_URL=http://10.0.2.2:8080   (Android emulator)
- *   EXPO_PUBLIC_API_URL=http://<your-ip>:8080   (physical device on same Wi-Fi)
- *
- * The request interceptor automatically attaches the JWT stored in AsyncStorage.
  */
 
-import { Platform } from 'react-native';
-
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 
-  (Platform.OS === 'android' ? 'http://10.0.2.2:8080' : 'http://localhost:8080');
+// ── UPDATE: Oyage Wi-Fi IP Address eka methanata damma ──
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://192.168.8.100:8080';
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -44,14 +37,14 @@ apiClient.interceptors.response.use(
     if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
       return Promise.reject(new Error('Server is waking up, please try again'));
     }
-    
+
     if (error.response?.status === 401 && !error.config?.url?.includes('/api/auth/')) {
-        const token = await AsyncStorage.getItem('auth_token');
-        if (token) {
-            await AsyncStorage.multiRemove(['auth_token', 'auth_user', 'auth_guest']);
-            router.replace('/(auth)/login');
-            return Promise.reject(new Error('Your session has expired. Please log in again.'));
-        }
+      const token = await AsyncStorage.getItem('auth_token');
+      if (token) {
+        await AsyncStorage.multiRemove(['auth_token', 'auth_user', 'auth_guest']);
+        router.replace('/(auth)/login');
+        return Promise.reject(new Error('Your session has expired. Please log in again.'));
+      }
     }
 
     // Relay the backend ApiError message when available

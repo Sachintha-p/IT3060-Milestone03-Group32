@@ -1,32 +1,35 @@
 import React from 'react';
 import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { SymbolView } from 'expo-symbols';
+import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { BrandColors, Spacing, Radius } from '@/constants/theme';
 
 export default function ReminderConfirmedScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const { title } = useLocalSearchParams<{ title: string }>();
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + Spacing.four }]}>
       <Text style={styles.headerTitle}>Reminder Set</Text>
 
       <View style={styles.content}>
-        {/* Bell Icon Simulation (Using standard yellow/gold symbol) */}
+        {/* Bell Icon */}
         <View style={styles.iconContainer}>
-          <SymbolView name="bell.fill" size={64} tintColor="#EAB308" />
+          <Ionicons name="notifications" size={64} color="#EAB308" />
         </View>
 
         <Text style={styles.title}>We'll let you know</Text>
         <Text style={styles.message}>
-          You'll get a push alert the moment "Human Computer Interaction" is back on the shelf.
+          You'll get a push alert the moment {title ? `"${title}"` : 'this book'} is back on the shelf.
         </Text>
 
-        <TouchableOpacity style={styles.linkButton}>
+        <TouchableOpacity style={styles.linkButton} onPress={() => router.push('/(tabs)/notify')} activeOpacity={0.7}>
           <Text style={styles.linkText}>View My Notifications</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.primaryButton}>
+        <TouchableOpacity style={styles.primaryButton} onPress={() => router.push('/(tabs)/books')} activeOpacity={0.85}>
           <Text style={styles.primaryButtonText}>Back to Search</Text>
         </TouchableOpacity>
       </View>

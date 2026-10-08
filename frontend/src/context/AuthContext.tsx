@@ -74,13 +74,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await AsyncStorage.removeItem(GUEST_KEY);
   };
 
-  /** Register a new user and persist session */
+  /** Register a new user — does NOT log the user in. The caller must redirect to login. */
   const register = async (name: string, email: string, password: string) => {
-    const res = await apiClient.post('/api/auth/register', { name, email, password });
-    const { token: newToken, ...profile } = res.data.data as { token: string } & AuthUser;
-    await persist(newToken, profile as AuthUser);
-    setIsGuest(false);
-    await AsyncStorage.removeItem(GUEST_KEY);
+    await apiClient.post('/api/auth/register', { name, email, password });
+    // Registration succeeds but does NOT log the user in.
+    // The user must sign in manually from the login screen.
   };
 
   /** Set guest mode */

@@ -71,6 +71,31 @@ export default function FiltersScreen() {
     }
   };
 
+  const handleLoadSavedFilter = async () => {
+    try {
+      setLoading(true);
+      const data = await getFilters();
+      if (data && (data.floor || data.zone || data.hasPower !== null || data.hasPc !== null)) {
+        setLocalFilters({
+          floor: data.floor || undefined,
+          zone: data.zone ? (data.zone as string).split(',') as Zone[] : [],
+          hasPower: data.hasPower !== null ? data.hasPower : undefined,
+          hasPc: data.hasPc !== null ? data.hasPc : undefined,
+        });
+        if (typeof window !== 'undefined') window.alert('Success\n\nLoaded saved filters from database!');
+        else Alert.alert('Success', 'Loaded saved filters from database!');
+      } else {
+        if (typeof window !== 'undefined') window.alert('Info\n\nNo saved filters found in database.');
+        else Alert.alert('Info', 'No saved filters found in database.');
+      }
+    } catch (e) {
+      if (typeof window !== 'undefined') window.alert('Error\n\nFailed to load saved filters.');
+      else Alert.alert('Error', 'Failed to load saved filters.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Matched exactly to the screenshot
   const floors = ['Floor 3 (Group)', 'Floor 1 (Quiet)', 'Floor 2 (Silent Pods)'];
   const zones: { label: string, value: Zone }[] = [
@@ -160,9 +185,16 @@ export default function FiltersScreen() {
         <TouchableOpacity style={styles.applyBtn} onPress={handleApply} activeOpacity={0.8}>
           <Text style={styles.applyBtnText}>Apply Filters</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.applyBtn, { backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', marginTop: 12 }]} onPress={handleSaveFilter} activeOpacity={0.8} disabled={loading}>
-          <Text style={[styles.applyBtnText, { color: loading ? '#94A3B8' : BrandColors.navy }]}>{loading ? 'Saving...' : 'Save Filters'}</Text>
-        </TouchableOpacity>
+        
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 12 }}>
+          <TouchableOpacity style={[styles.applyBtn, { flex: 1, marginRight: 6, backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0' }]} onPress={handleLoadSavedFilter} activeOpacity={0.8} disabled={loading}>
+            <Text style={[styles.applyBtnText, { color: loading ? '#94A3B8' : BrandColors.navy, fontSize: 14 }]}>Load Saved</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={[styles.applyBtn, { flex: 1, marginLeft: 6, backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0' }]} onPress={handleSaveFilter} activeOpacity={0.8} disabled={loading}>
+            <Text style={[styles.applyBtnText, { color: loading ? '#94A3B8' : BrandColors.navy, fontSize: 14 }]}>{loading ? 'Saving...' : 'Save Current'}</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
     </View>

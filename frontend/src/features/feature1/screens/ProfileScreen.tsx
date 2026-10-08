@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, Text, TouchableOpacity, Switch } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SymbolView } from 'expo-symbols';
+import { Ionicons } from '@expo/vector-icons';
 import { Spacing, Radius } from '@/constants/theme';
 import { useAuth } from '@/context/AuthContext';
 import { router } from 'expo-router';
@@ -16,6 +17,7 @@ const PALETTE = {
   muted: '#64748B',
   danger: '#DC2626',
   dangerSoft: '#FEF2F2',
+  trackOff: '#E2E8F0',
 };
 
 const getInitials = (name?: string) => {
@@ -26,6 +28,40 @@ const getInitials = (name?: string) => {
   const last = parts.length > 1 ? parts[parts.length - 1].charAt(0) : '';
   return (first + last).toUpperCase();
 };
+
+// Icon that works everywhere: SF Symbol on iOS, Ionicons on web and Android
+type AppIconProps = {
+  symbol: string;
+  ion: keyof typeof Ionicons.glyphMap;
+  color: string;
+  size?: number;
+};
+
+const AppIcon = ({ symbol, ion, color, size = 20 }: AppIconProps) => (
+  <SymbolView
+    name={symbol as any}
+    size={size}
+    tintColor={color}
+    fallback={<Ionicons name={ion} size={size} color={color} />}
+  />
+);
+
+// Switch with a white thumb in both states (the web build defaults to a teal thumb when on)
+type AppSwitchProps = {
+  value: boolean;
+  onValueChange: (v: boolean) => void;
+};
+
+const AppSwitch = ({ value, onValueChange }: AppSwitchProps) => (
+  <Switch
+    value={value}
+    onValueChange={onValueChange}
+    trackColor={{ false: PALETTE.trackOff, true: PALETTE.orange }}
+    thumbColor={PALETTE.white}
+    ios_backgroundColor={PALETTE.trackOff}
+    {...({ activeThumbColor: PALETTE.white } as any)}
+  />
+);
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
@@ -59,7 +95,7 @@ export default function ProfileScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()} activeOpacity={0.7}>
-          <SymbolView name="arrow.left" size={20} tintColor={PALETTE.navy} />
+          <AppIcon symbol="arrow.left" ion="arrow-back" color={PALETTE.navy} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Profile</Text>
       </View>
@@ -74,7 +110,7 @@ export default function ProfileScreen() {
             {initials ? (
               <Text style={styles.avatarInitials}>{initials}</Text>
             ) : (
-              <SymbolView name="person.fill" size={34} tintColor={PALETTE.orange} />
+              <AppIcon symbol="person.fill" ion="person" color={PALETTE.orange} size={34} />
             )}
           </View>
         </View>
@@ -92,7 +128,7 @@ export default function ProfileScreen() {
       {isGuest ? (
         <View style={styles.guestCard}>
           <View style={styles.guestIconTile}>
-            <SymbolView name="lock.fill" size={18} tintColor={PALETTE.orange} />
+            <AppIcon symbol="lock.fill" ion="lock-closed" color={PALETTE.orange} />
           </View>
           <Text style={styles.guestText}>
             You are browsing as a guest. Log in to manage your account.
@@ -105,7 +141,7 @@ export default function ProfileScreen() {
             <View style={styles.settingRow}>
               <View style={styles.settingLabelRow}>
                 <View style={styles.iconTile}>
-                  <SymbolView name="person.fill" size={18} tintColor={PALETTE.orange} />
+                  <AppIcon symbol="person.fill" ion="person" color={PALETTE.orange} />
                 </View>
                 <View>
                   <Text style={styles.rowCaption}>Name</Text>
@@ -117,7 +153,7 @@ export default function ProfileScreen() {
             <View style={styles.settingRow}>
               <View style={styles.settingLabelRow}>
                 <View style={styles.iconTile}>
-                  <SymbolView name="envelope.fill" size={18} tintColor={PALETTE.orange} />
+                  <AppIcon symbol="envelope.fill" ion="mail" color={PALETTE.orange} />
                 </View>
                 <View style={{ flexShrink: 1 }}>
                   <Text style={styles.rowCaption}>Email</Text>
@@ -129,7 +165,7 @@ export default function ProfileScreen() {
             <View style={styles.settingRow}>
               <View style={styles.settingLabelRow}>
                 <View style={styles.iconTile}>
-                  <SymbolView name="checkmark.shield.fill" size={18} tintColor={PALETTE.orange} />
+                  <AppIcon symbol="checkmark.shield.fill" ion="shield-checkmark" color={PALETTE.orange} />
                 </View>
                 <View>
                   <Text style={styles.rowCaption}>Role</Text>
@@ -147,31 +183,21 @@ export default function ProfileScreen() {
         <View style={styles.settingRow}>
           <View style={styles.settingLabelRow}>
             <View style={styles.iconTile}>
-              <SymbolView name="bell.fill" size={18} tintColor={PALETTE.orange} />
+              <AppIcon symbol="bell.fill" ion="notifications" color={PALETTE.orange} />
             </View>
             <Text style={styles.settingLabel}>Push Notifications</Text>
           </View>
-          <Switch
-            value={pushEnabled}
-            onValueChange={setPushEnabled}
-            trackColor={{ false: '#E2E8F0', true: PALETTE.orange }}
-            thumbColor={PALETTE.white}
-          />
+          <AppSwitch value={pushEnabled} onValueChange={setPushEnabled} />
         </View>
         <View style={styles.divider} />
         <View style={styles.settingRow}>
           <View style={styles.settingLabelRow}>
             <View style={styles.iconTile}>
-              <SymbolView name="moon.fill" size={18} tintColor={PALETTE.orange} />
+              <AppIcon symbol="moon.fill" ion="moon" color={PALETTE.orange} />
             </View>
             <Text style={styles.settingLabel}>Dark Mode</Text>
           </View>
-          <Switch
-            value={darkMode}
-            onValueChange={setDarkMode}
-            trackColor={{ false: '#E2E8F0', true: PALETTE.orange }}
-            thumbColor={PALETTE.white}
-          />
+          <AppSwitch value={darkMode} onValueChange={setDarkMode} />
         </View>
       </View>
 
@@ -182,7 +208,12 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       ) : (
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout} activeOpacity={0.85}>
-          <SymbolView name="rectangle.portrait.and.arrow.right" size={18} tintColor={PALETTE.danger} />
+          <AppIcon
+            symbol="rectangle.portrait.and.arrow.right"
+            ion="log-out-outline"
+            color={PALETTE.danger}
+            size={20}
+          />
           <Text style={styles.logoutButtonText}>Log Out</Text>
         </TouchableOpacity>
       )}

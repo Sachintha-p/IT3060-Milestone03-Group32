@@ -9,29 +9,29 @@ export default function StaffSettingsScreen() {
   const [emailDigest, setEmailDigest] = useState(false);
 
   return (
-    <ScrollView 
-      style={styles.container} 
+    <ScrollView
+      style={styles.container}
       contentContainerStyle={[styles.contentContainer, { paddingTop: insets.top + Spacing.four }]}
     >
-      <Text style={styles.headerTitle}>Settings</Text>
-
       <Text style={styles.sectionTitle}>NOTIFICATIONS</Text>
 
       <View style={styles.settingRow}>
         <Text style={styles.settingLabel}>Push alerts for critical zones</Text>
-        <Switch 
-          value={pushAlerts} 
-          onValueChange={setPushAlerts} 
+        <Switch
+          value={pushAlerts}
+          onValueChange={setPushAlerts}
           trackColor={{ false: '#E2E8F0', true: BrandColors.orange }}
+          thumbColor="#FFFFFF"
         />
       </View>
 
       <View style={styles.settingRow}>
         <Text style={styles.settingLabel}>Email digest</Text>
-        <Switch 
-          value={emailDigest} 
-          onValueChange={setEmailDigest} 
+        <Switch
+          value={emailDigest}
+          onValueChange={setEmailDigest}
           trackColor={{ false: '#E2E8F0', true: BrandColors.orange }}
+          thumbColor="#FFFFFF"
         />
       </View>
 
