@@ -1,27 +1,20 @@
 # Stage 1: Build the application
-FROM eclipse-temurin:17-jdk-focal AS build
+FROM maven:3.9-eclipse-temurin-17 AS build
 
 WORKDIR /app
-
-# Copy maven executable to the image
-COPY mvnw .
-COPY .mvn .mvn
 
 # Copy the pom.xml file
 COPY pom.xml .
 
-# Build all the dependencies in preparation to go offline. 
-# This is a separate step so the dependencies will be cached unless the pom.xml file has changed.
-RUN chmod +x ./mvnw
-RUN ./mvnw dependency:go-offline -B
+# Resolve dependencies in a separate layer so they are cached unless pom.xml changes.
+RUN mvn dependency:go-offline -B
 
 # Copy the project source
 COPY src src
 
 # Package the application
-RUN ./mvnw clean package -DskipTests
+RUN mvn clean package -DskipTests -B
 
-# Stage 2: Create the production image
 FROM eclipse-temurin:17-jre-focal
 
 WORKDIR /app
