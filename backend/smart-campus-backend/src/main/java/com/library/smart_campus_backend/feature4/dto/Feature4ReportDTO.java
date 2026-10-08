@@ -16,5 +16,6 @@ public class Feature4ReportDTO {
     private String summary;
     private LocalDateTime createdAt;
     private String parameters;
+    private String headline;
     private Object result;
 }

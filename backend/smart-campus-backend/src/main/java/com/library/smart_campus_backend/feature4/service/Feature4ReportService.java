@@ -29,7 +29,7 @@ public class Feature4ReportService {
     @Transactional(readOnly = true)
     public List<Feature4ReportDTO> getAllReports() {
         return reportRepository.findAllByOrderByCreatedAtDesc().stream()
-                .map(this::mapToDTO)
+                .map(this::mapToSummaryDTO)
                 .collect(Collectors.toList());
     }
 
@@ -93,7 +93,11 @@ public class Feature4ReportService {
                     for (Map<String, Object> row : statuses) {
                         String s = String.valueOf(row.get("status"));
                         long c = ((Number) row.get("cnt")).longValue();
-                        metrics.add(Map.of("key", "status_" + s, "label", "Status " + s, "value", c, "source", "feature1_reservations.status"));
+                        String humanLabel = "Status " + s;
+                        if ("1".equals(s) || "CHECKED_IN".equals(s)) humanLabel = "Checked In";
+                        else if ("2".equals(s) || "CANCELLED".equals(s)) humanLabel = "Cancelled";
+                        else if ("0".equals(s) || "RESERVED".equals(s)) humanLabel = "Reserved";
+                        metrics.add(Map.of("key", "status_" + s, "label", humanLabel, "value", c, "source", "feature1_reservations.status"));
                         if ("1".equals(s) || "CHECKED_IN".equals(s)) checkedIn = c;
                         if ("2".equals(s) || "CANCELLED".equals(s)) cancelled = c;
                     }
@@ -225,7 +229,29 @@ public class Feature4ReportService {
                 .summary(report.getSummary())
                 .createdAt(report.getCreatedAt())
                 .parameters(report.getParameters())
+                .headline(generateHeadline(report))
                 .result(parsedResult)
+                .build();
+    }
+
+    private String generateHeadline(Feature4Report report) {
+        if (report.getSummary() != null && report.getSummary().contains("\n")) {
+            String[] lines = report.getSummary().split("\n");
+            if (lines.length > 2) {
+                return lines[2].trim();
+            }
+        }
+        return report.getType() + " Report (" + report.getDateFrom() + " to " + report.getDateTo() + ")";
+    }
+
+    private Feature4ReportDTO mapToSummaryDTO(Feature4Report report) {
+        return Feature4ReportDTO.builder()
+                .id(report.getId())
+                .type(report.getType())
+                .dateFrom(report.getDateFrom())
+                .dateTo(report.getDateTo())
+                .createdAt(report.getCreatedAt())
+                .headline(generateHeadline(report))
                 .build();
     }
 }

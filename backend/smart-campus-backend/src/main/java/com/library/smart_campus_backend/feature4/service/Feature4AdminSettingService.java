@@ -30,7 +30,7 @@ public class Feature4AdminSettingService {
     @Transactional
     public Feature4AdminSettingDTO updateSettings(Feature4AdminSettingDTO req) {
         if (req.getOccupancyThreshold() < 0 || req.getOccupancyThreshold() > 100) {
-            throw new IllegalArgumentException("Threshold must be between 0 and 100");
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Threshold must be between 0 and 100");
         }
         Feature4AdminSetting setting = repository.findAll().stream().findFirst()
                 .orElseGet(() -> {

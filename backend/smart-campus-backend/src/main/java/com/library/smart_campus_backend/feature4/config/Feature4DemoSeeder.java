@@ -41,6 +41,18 @@ public class Feature4DemoSeeder implements CommandLineRunner {
             jdbcTemplate.update("INSERT INTO feature4_admin_settings (occupancy_threshold, auto_generate_weekly_report, allow_guest_lookups) VALUES (?, ?, ?)",
                     80, true, true);
         }
+        
+        Integer adminCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM users WHERE email = 'admin@library.edu'", Integer.class);
+        if (adminCount == null || adminCount == 0) {
+            jdbcTemplate.update("INSERT INTO users (name, email, student_id, password, role, status) VALUES (?, ?, ?, ?, ?, ?)",
+                "Test Admin", "admin@library.edu", "ADMIN001", "$2a$10$wYpE8q6aG4l1Y/1U6P2y.O.4B/bKqGvD2N4lQ9QzWkUqX2YvV3eH6", "ADMIN", "ACTIVE"); // password123
+        }
+        
+        Integer studentCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM users WHERE email = 'student@library.edu'", Integer.class);
+        if (studentCount == null || studentCount == 0) {
+            jdbcTemplate.update("INSERT INTO users (name, email, student_id, password, role, status) VALUES (?, ?, ?, ?, ?, ?)",
+                "Test Student", "student@library.edu", "STU12345", "$2a$10$wYpE8q6aG4l1Y/1U6P2y.O.4B/bKqGvD2N4lQ9QzWkUqX2YvV3eH6", "STUDENT", "ACTIVE");
+        }
 
         System.out.println("Feature 4 Demo Seeder: Seeding demo history...");
 

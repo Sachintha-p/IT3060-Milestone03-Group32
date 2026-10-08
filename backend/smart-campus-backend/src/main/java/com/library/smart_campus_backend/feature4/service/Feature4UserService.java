@@ -22,7 +22,7 @@ public class Feature4UserService {
     private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
     @Transactional(readOnly = true)
-    public List<UserSummaryDTO> getUsers(String q, String role) {
+    public List<UserSummaryDTO> getUsers(String q, String role, String status) {
         List<User> users = userRepository.findAll();
         if (q != null && !q.isEmpty()) {
             String lowerQ = q.toLowerCase();
@@ -33,6 +33,11 @@ public class Feature4UserService {
         if (role != null && !role.isEmpty() && !"ALL".equalsIgnoreCase(role)) {
             users = users.stream()
                 .filter(u -> u.getRole().name().equalsIgnoreCase(role))
+                .collect(Collectors.toList());
+        }
+        if (status != null && !status.isEmpty() && !"ALL".equalsIgnoreCase(status)) {
+            users = users.stream()
+                .filter(u -> u.getStatus().equalsIgnoreCase(status))
                 .collect(Collectors.toList());
         }
         return users.stream().map(this::mapToDTO).collect(Collectors.toList());
@@ -89,11 +94,14 @@ public class Feature4UserService {
         Long activeReservations = jdbcTemplate.queryForObject(
             "SELECT COUNT(*) FROM feature1_reservations WHERE user_id = ? AND status IN (0, 1, 'RESERVED', 'CHECKED_IN')", Long.class, id);
         if (activeReservations != null && activeReservations > 0) {
-            throw new IllegalArgumentException("Cannot delete user with active reservations");
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "User has activity. Suspend instead.");
         }
         
         Long checkedOutBooks = jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM feature3_shelving_logs WHERE user_id = ? AND action IN ('CHECK_OUT', 'CHECKED_OUT')", Long.class, id); // wait, F3 might not link to user_id for checkouts, wait... F1/F2/F3 logic.
+            "SELECT COUNT(*) FROM feature3_shelving_logs WHERE staff_id = ?", Long.class, id); 
+        if (checkedOutBooks != null && checkedOutBooks > 0) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "User has activity. Suspend instead.");
+        }
         
         userRepository.delete(user);
     }

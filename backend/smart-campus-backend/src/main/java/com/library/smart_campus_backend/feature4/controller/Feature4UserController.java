@@ -25,8 +25,9 @@ public class Feature4UserController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<List<UserSummaryDTO>>> getUsers(
             @RequestParam(required = false) String q,
-            @RequestParam(required = false) String role) {
-        return ResponseEntity.ok(ApiResponse.ok("Users retrieved", userService.getUsers(q, role)));
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) String status) {
+        return ResponseEntity.ok(ApiResponse.ok("Users retrieved", userService.getUsers(q, role, status)));
     }
 
     @PostMapping
