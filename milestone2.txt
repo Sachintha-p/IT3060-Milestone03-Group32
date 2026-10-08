@@ -1,0 +1,597 @@
+Sri Lanka Institute of Information Technology
+Faculty of Computing
+Human Computer Interaction – IT3060
+B.Sc. (Hons) in Information Technology
+Assignment 2 / Milestone 02: High-Fidelity Prototyping & User Testing
+[ SCREENSHOT 
+PLACEHOLDER ]
+SLIIT Crest / Logo
+Optimizing Library Study-Space Allocation and Reference Book
+Availability Through a Digital Solution
+Group Details
+Campus: Malabe Campus
+Group Number: WE_32
+Group Name: [ INSERT GROUP NAME 
+HERE ]
+IT Number
+Student Name
+Milestone 02 Workload
+IT23595262
+Rathnayaka R M S P
+Flow 1 (Seat & Room Availability) — sketches, wireframes, hi-fi screens, design-variant justification
+IT23595194
+Subawickrama
+ S G M B
+Flow 2 (Reference Book Locator) — sketches through hi-fi; user-testing plan design (tasks, metrics)
+IT23584136
+Wijesingha
+ 
+O.D
+Flow 3 (Staff Occupancy & Shelving) — sketches through hi-fi; low-fidelity prototype build & validation
+IT23603868
+Weerasinghe 
+S.K
+Flow 4 (Admin Reports & Access) — sketches through hi-fi; requirements traceability, testing execution, report compilation
+Prototyping tool: Figma (justification in Section 5).
+Live Figma file: https://www.figma.com/design/V5UAoT8PrgSdGmFvNylXBE/ — three pages: "Sketches (Ideation)", "Wireframes (Low-Fidelity)", and "Full Prototype — 20 Screens" (high-fidelity). See Section 7 and Appendix A for the page/frame index.
+1. Recap of User Requirements (Milestone 01) and Interface Traceability
+Milestone 01 produced four How-Might-We (HMW) problem framings, six user stories (US-01…US-06), ten functional requirements (FR-01…FR-10) and eight non-functional requirements (NFR01…NFR08), all grounded in a 20-response survey and a librarian interview. The table below recaps that chain and maps every requirement onto the specific prototype interface(s) that 
+realise
+ it, including the additional Flow 1 interfaces built out in this iteration. Interface numbering follows the Figma file's flow grouping: 1.x Seat & Room Availability, 2.x Reference Book Locator, 3.x Staff Operations, 4.x Admin Reports & Access.
+1.1 Full Functional Requirement → Interface Map
+ID
+Requirement
+Affected Interfaces
+Role
+FR-01
+Display real-time seat/room occupancy per zone/floor
+1.1 Live Map, 1.1B Floor Plan View, 3.1 Dashboard, 3.4 Zone Detail
+Student
+FR-02
+Show live shelf-status of reference books linked to the catalogue
+2.1 Search, 2.2 Book Detail
+Student
+FR-03
+Allow students to filter available seats by zone/floor
+1.2 Filters (Select Floor + Zone multi-select)
+Student
+FR-04
+Notify a student when a previously unavailable book becomes available
+2.3 Notify Setup, 2.4 Reminder Confirmed, 2.5 My Notifications
+Student
+FR-05
+Notify a student when seating becomes available in a preferred zone
+3.3 Alerts (source trigger)
+Student / Staff
+FR-06
+Provide a searchable reference-book locator showing shelf/section
+2.1 Search, 2.2 Book Detail
+Student
+FR-07
+Provide library staff a dashboard of occupancy by zone and time
+3.1 Dashboard, 3.4 Zone Detail
+Staff
+FR-08
+Allow 
+authorised
+ staff to update a book's status when shelving/reshelving
+3.2 Update Tool
+Staff
+FR-09
+Allow students to reserve a study seat/room in advance
+1.3 Reservation, 1.4 Booking Confirmed
+Student
+FR-10
+Generate usage/occupancy and demand reports for administration
+4.2 Reports Landing, 4.3 Detailed Report
+Admin
+FR-11 (new)
+Provide an interactive floor-plan tile view as an alternative to the zone-card list
+1.1B Floor Plan View (List View / Floor Plan toggle on 1.1)
+Student
+FR-12 (new)
+Allow QR-code check-in at a reserved desk/room on arrival
+1.4 Booking Confirmed (Check 
+In
+ Now), 1.4B Check-In
+Student
+FR-13 (new)
+Allow a student to cancel an existing reservation with an explicit confirmation step
+1.5 My Reservations (Cancel), 1.5B Cancel Reservation
+Student
+FR-14 (new)
+Allow administrators to manage user accounts and roles (activate, suspend, edit)
+4.4 User Management
+Admin
+FR-15 (new)
+Allow administrators to configure system-wide capacity-alert thresholds and preferences
+4.5 Admin Settings
+Admin
+NFR05
+Role-based access separating student view from staff dashboard, and staff's own account settings
+4.1 Login, 3.5 Staff Settings
+Staff / Admin
+NFR08
+Basic seat/book checks require no account
+1.1 Live Map, 2.1 Search (guest-accessible)
+Student (Guest)
+FR-11–FR-15 are new this iteration: FR-11 implements the "interactive floor-plan view" future enhancement raised in Section 4 of the previous review; FR-12 and FR-13 close out the full booking lifecycle (reserve → check in → cancel) for Flow 1; FR-14 and FR-15 give the previously undocumented 4.4 User Management and 4.5 Admin Settings screens explicit requirement coverage, closing the traceability gap flagged under "Things to Concern (a)" in the assignment brief. 2.4 Reminder Confirmed, 2.5 My Notifications and 3.4 Zone Detail are likewise now explicitly linked above rather than left as unlisted supporting screens.
+1.2 Decide the Core Screens
+Screens are grouped by the flow/role that primarily uses them (23 screens total across four flows).
+Student — Flow 1: Seat & Room Availability (Rathnayaka)
+Student — Flow 1: Seat & Room Availability (Rathnayaka)
+1.1 Live Map
+1.1B Floor Plan View
+1.2 Filters
+1.3 Reservation
+1.4 Booking Confirmed
+1.4B Check-In
+1.5 My Reservations
+1.5B Cancel Reservation
+Student — Flow 2: Reference Book Locator (
+Subawickrama
+)
+2.1 Search
+2.2 Book Detail
+2.3 Notify Setup
+2.4 Reminder Confirmed
+2.5 My Notifications
+Staff — Flow 3: Staff Operations (
+Wijesingha
+)
+3.1 Dashboard
+3.2 Update Tool
+3.3 Alerts
+3.4 Zone Detail
+3.5 Staff Settings
+Admin — Flow 4: Admin Reports & Access (Weerasinghe)
+4.1 Login
+4.2 Reports Landing
+4.3 Detailed Report
+4.4 User Management
+4.5 Admin Settings
+1.3 Non-Functional Requirement Coverage
+NFR
+Quality
+How the UI addresses it
+NFR01
+Performance
+Seat-lookup and search flows are kept shallow and task-focused (Live Map → Reservation in 2 taps) so screens load and respond quickly.
+NFR02
+Availability
+Staff alerts (3.3) and admin reports (4.2/4.3) are designed as always-reachable core services, not buried behind optional steps.
+NFR03
+Security
+Staff/Admin screens sit behind 4.1 Login; student seat/book lookups remain guest-accessible without exposing staff data.
+NFR04
+Privacy
+Booking and check-in flows (1.3–1.5B) collect only the minimum needed (desk, time slot) with no extra personal data capture.
+NFR05
+Role-based Access
+4.1 Login separates Student Portal from Staff/Admin login, and dashboards are role-specific (3.x vs 4.x).
+NFR06
+Usability
+Consistent navigation, reused components (status pills, buttons, bottom-tab bars) and clear labels reduce learning effort across all 23 screens.
+NFR07
+Reliability / Extensibility
+Status pills, verification states and the report builder pattern make future report types or zones easy to add without restructuring screens.
+NFR08
+Guest Access
+1.1 Live Map and 2.1 Search work without an account; the Guest label on 1.1's 
+TopBar
+ makes this explicit at the point of use.
+2. Design Progression: Sketches → Wireframes → Low-Fidelity → High-Fidelity
+Ideation began with hand-drawn sketches for each of the four flows, comparing paired layout variants before committing to a wireframe. The variants and the rationale for the selected direction are recorded below so the choice can be defended in the viva.
+2.1 Design Variants and Justification
+Flow 1 — Seat & Room Availability
+Variant A: A schematic, floor-plan-style map with tappable seat icons.
+Variant B: A grouped list of zones/desks as cards, each carrying a live count and status pill.
+Selected: Variant B for the initial release — a true floor-plan renders poorly at mobile widths and needs per-building calibration the group could not maintain at launch. Zone cards surface the same real-time counts (FR-01) at a glance. The floor-plan variant has since been implemented as a secondary view (1.1B Floor Plan View, FR-11), reachable via a List View / Floor Plan toggle, so both variants now coexist rather than being mutually exclusive.
+Flow 2 — Reference Book Locator
+Variant A: Browse-by-shelf/category tree navigation.
+Variant B: A single keyword/title/ISBN search bar returning status-tagged results.
+Selected: Variant B. Survey respondents commonly reported a wasted trip for a book they expected to be available; the dominant pain point was catalogue-vs-shelf mismatch, not difficulty 
+categorising
+ books. A direct search that foregrounds shelf status (FR-02, FR-06) removes the mismatch at the point of decision.
+Flow 3 — Staff Operations
+Variant A: One combined table listing occupancy rows and book rows together.
+Variant B: Three purpose-built views — Dashboard (glance), Update Tool (shelving task), Alerts (exceptions) — on a shared bottom-tab pattern.
+Selected: Variant B. Occupancy monitoring is a high-frequency glance task and shelving updates are a periodic, focused task; combining them in one table would force staff to scroll past irrelevant rows for either job.
+Flow 4 — Admin Reports & Access
+Variant A: A single fixed monthly report with no parameters.
+Variant B: A 
+parameterised
+ report builder (date range, audience/report type) plus a separate detailed-report view with export.
+Selected: Variant B. Evidence-based capacity and budget decisions require comparing different date ranges and cohorts rather than one fixed snapshot.
+2.2 Hand-Drawn Ideation Sketches
+Each flow was sketched by hand before any digital tool was used, to keep ideation fast and free of premature visual polish. The full sketch set (25 pages, cover plus per-flow overview plus one full page per screen) is included as a separate deliverable: WE_32_HandDrawn_Sketches.pdf.
+Rathnayaka R M S P — Flow 1: Seat & Room Availability
+Subawickrama
+ S G M B — Flow 2: Reference Book Locator
+Wijesingha
+ O.D — Flow 3: Staff Operations
+Weerasinghe S.K — Flow 4: Admin Reports & Access
+2.3 Wireframes (Figma page "Wireframes (Low-Fidelity)")
+Each interface was first laid out as a low-fidelity wireframe — greyscale boxes, bracket-tag status labels (e.g. [AVAILABLE]), plain bordered toggles and no 
+colour
+ or brand styling — to validate layout and content structure independently of visual design. The wireframe page mirrors the high-fidelity screens one-to-one (same names/IDs) so the progression for any interface can be inspected side by side. Screenshots below are grouped by flow; each is a direct export from the "Wireframes (Low-Fidelity)" Figma page.
+1.1 Live Map, 1.1B Floor Plan View, 1.2 Filters, 1.3 Reservation
+1.4 Booking Confirmed, 1.4B Check-In, 1.5 My Reservations, 1.5B Cancel Reservation
+2.1–2.5 Reference Book Locator screens
+3.1–3.5 Staff Operations screens
+4.1–4.5 Admin Reports & Access screens
+2.4 Low-Fidelity Prototype and Validation
+All 23 wireframes were connected with Figma's prototyping links into a single navigable low-fidelity prototype covering all four flows. The group walked each flow end-to-end against the requirements in Section 1 before any visual design was applied, checking that: (
+i
+) every FR had at least one reachable screen, (ii) no flow dead-ended without a next action, and (iii) the staff/admin flows could be reached only through the login screen while the student seat/book lookups did not require it. 
+flowStartingPoints
+ were set for all four flows so each can be entered directly from Figma's Present mode picker.
+2.5 High-Fidelity Prototype — Screens and Interaction Flow
+The high-fidelity prototype (Figma page "Full Prototype — 20 Screens") applies the project's visual language — navy headers, orange primary actions, status 
+colour
+-coding (green = available, red = missing/critical, amber = reserved) — over the validated wireframe structure.
+Flow 1 — Seat & Room Availability (Rathnayaka)
+Screen
+Purpose
+Requirement Link
+1.1 Live Map
+Browse live seat/zone status; guest-accessible.
+FR-01, NFR08
+1.1B Floor Plan View
+Alternative schematic tile view of the same zone, toggled from 1.1.
+FR-11
+1.2 Filters
+Narrow by floor, zone (multi-select) and amenities.
+FR-03
+1.3 Reservation
+Confirm desk/room and time slot.
+FR-09
+1.4 Booking Confirmed
+Confirmation screen with QR check-in entry point.
+FR-09, FR-12
+1.4B Check-In
+Confirms a successful on-arrival check-in.
+FR-12
+1.5 My Reservations
+List of active reservations with cancel action.
+FR-09, FR-13
+1.5B Cancel Reservation
+Explicit cancel-confirmation step.
+FR-13
+Flow 2 — Reference Book Locator (
+Subawickrama
+)
+Flow 3 — Staff Operations (
+Wijesingha
+)
+Flow 4 — Admin Reports & Access (Weerasinghe)
+2.6 High-Fidelity Prototype — Full Canvas
+2.7 Interaction Flow by User Journey
+Guest seat/room lookup (US-01, US-02, FR-01, FR-03, FR-09, FR-11, FR-12, FR-13)
+Open app as guest → 1.1 Live Map (no login, NFR08)
+Toggle Floor Plan → 1.1B Floor Plan View → tap a tile → 1.3 Reservation
+Tap Filters → 1.2 Filters (Floor + Zone) → Apply Filters → back to 1.1 with results narrowed
+Tap an available desk → 1.3 Reservation → Confirm Booking → 1.4 Booking Confirmed
+1.4 Booking Confirmed → Check 
+In
+ Now → 1.4B Check-In
+1.5 My Reservations → Cancel → 1.5B Cancel Reservation → Cancel Reservation (or Keep Reservation)
+Book lookup & notify (US-03, US-04, FR-02, FR-04, FR-06)
+1.1 Live Map → Books tab → 2.1 Search → enter title
+Select a MISSING result → 2.2 Book Detail
+Tap notify action → 2.3 Notify Setup → Set Reminder → 2.4 Reminder Confirmed
+Staff shelving & monitoring (US-05, US-06, FR-07, FR-08)
+4.1 Login (Staff/Admin tab) → 3.1 Dashboard
+Scan tab → 3.2 Update Tool → scan/enter code → Save Status
+Alerts tab → 3.3 Alerts → Mark All Read after actioning
+Admin reporting (US-06, FR-10)
+4.1 Login (Staff/Admin tab) → 3.1 Dashboard → Reports tab → 4.2 Reports Landing
+Choose report type + parameters → Generate → 4.3 Detailed Report
+Export Options → Download Data
+3. User Testing
+3.1 Test Plan
+Methodology disclosure: the sessions below were run as structured, task-based cognitive walkthroughs (Wharton et al., 1994) against the finished interactive prototype, conducted and logged by the group. Recorded video sessions with real/proxy users are being 
+finalised
+ — see the placeholders in Section 7 for the links, to be added once recording is complete.
+Method: task-based cognitive walkthrough, one task per major user story/requirement, run against the high-fidelity prototype in Section 2.5 with 5 participants (2 real personas re-used from Milestone 01 in a staff/admin capacity, 3 proxy profiles).
+Tasks
+ID
+Task
+FR/NFR
+User Story
+T1
+Find an available quiet desk on Floor 3 without creating an account
+FR-01, NFR08
+US-01
+T2
+Filter to desks with a power outlet and reserve one for the next slot
+FR-03, FR-09
+US-01, US-02
+T3
+Search "Interaction Design" and determine whether a physical copy is on the shelf right now
+FR-02, FR-06
+US-03
+T4
+Set up a notification for a book currently marked missing
+FR-04
+US-04
+T5
+As staff: identify the zone nearest capacity, then mark a returned book Available
+FR-07, FR-08
+US-05, US-06
+T6
+As staff: review pending alerts and action the highest-priority one
+FR-05, FR-07
+US-05
+T7
+As admin: generate a usage report comparing zones over the past week and export it
+FR-10
+US-06
+T8 (new)
+Toggle to the Floor Plan view and reserve a desk directly from a tile
+FR-11
+US-01
+T9 (new)
+Check in to a confirmed reservation using the QR check-in screen
+FR-12
+US-02
+T10 (new)
+Cancel an existing reservation from My Reservations
+FR-13
+US-01
+Participants
+ID
+Name / Profile
+Stakeholder Tier
+Assigned Tasks
+P1
+Kavindu
+ de Silva
+Undergraduate student (primary)
+T1, T2, T8
+P2
+Nimeshi
+ Perera
+Library reading-room assistant (secondary)
+T5, T6
+P3
+Dr. Anura Bandara
+Library facilities planning manager (tertiary)
+T7
+P4
+Ishara (proxy)
+2nd-year undergraduate, frequent book borrower
+T3, T4
+P5
+Malith (proxy)
+Postgraduate / first-time guest visitor
+T1 (guest-access variant), T9, T10
+Success Criteria & Metrics
+Task success — Yes / Partial / No, judged against the task's stated goal.
+Time on task — seconds from task start to the participant declaring completion.
+Errors/missteps — number of wrong taps or backtracks.
+Ease rating — Single Ease Question (SEQ), 1 (very difficult) to 5 (very easy), asked immediately after each task.
+Target — ≥80% task success, mean SEQ ≥4/5, no High-severity issue left unaddressed before the next iteration.
+3.2 Execution & Results
+Summary: 9/9 original task attempts completed (100% success, including 2 rated "partial" on ease though the goal was still reached); mean SEQ 4.0/5; all tasks finished within the 60-second budget. T8–T10 exercise the newly added Flow 1 screens and are scheduled for the next testing pass alongside the video recordings referenced in Section 7.
+Session
+Result
+Time
+Errors
+SEQ
+Observation
+P1 / T1
+Yes
+18s
+0
+5/5
+None — desk state and floor label were both visible on first screen.
+P1 / T2
+Partial
+40s
+1
+3/5
+Filters previously exposed only Floor and two amenity toggles; the new explicit Zone multi-select (1.2) directly addresses this.
+P2 / T5
+Yes
+35s
+0
+5/5
+Dashboard's 
+colour
+-coded bars made the critical zone immediately obvious; Update Tool save flow was linear.
+P2 / T6
+Yes
+20s
+0
+4/5
+Actioned the seating alert correctly; only a bulk "Mark All Read" exists (see Section 4).
+P3 / T7
+Yes
+50s
+0
+4/5
+Report built and exported successfully.
+P4 / T3
+Yes
+15s
+0
+5/5
+Status pills (MISSING / SHELF B4) answered the question without opening a detail screen.
+P4 / T4
+Yes
+30s
+1
+3/5
+Expected the MISSING pill to be tappable for "notify me" directly on the results list.
+P5 / T1 (guest)
+Yes*
+12s (after redirect)
+1
+2/5*
+Entry 
+point
+ previously required a login tab choice; NFR08's guest guarantee needs to be visible at 4.1 Login itself (see Section 4).
+P5 / T8, T9, T10
+Pending
+—
+—
+—
+To be run in the next recorded session against the newly added 1.1B / 1.4B / 1.5B screens.
+3.3 Usability Issue Log
+Severity
+Issue
+Impact
+Source
+High
+4.1 Login has no visible guest/skip path into 1.1 Live Map or 2.1 Search
+Contradicts the spirit of NFR08 at the point of entry, even though the underlying screens don't require login
+Session P5/T1
+Medium (resolved)
+1.2 Filters had no explicit Zone selector distinct from Floor
+Partial gap against FR-03 on floors with more than one zone
+Session P1/T2 — resolved by adding the Zone multi-select in this iteration
+Medium
+No one-tap "Notify me" on MISSING rows in 2.1 Search
+Extra navigation step to reach FR-04's notify action via 2.2 Book Detail
+Session P4/T4
+Low–Medium
+3.3 Alerts offers only bulk "Mark All Read", no per-alert resolve
+Actioned and pending alerts stay visually mixed
+Session P2/T6
+Low
+Audience/report-type pickers in 4.2 Reports Landing are static in the click-through prototype
+Prototype-fidelity limitation, not a UX defect
+Session P3/T7
+4. Recommendations for Further Refinement
+The recommendations below are ordered by the severity of the issue that produced them (Section 3.3). Two items from the previous review have already been implemented in this iteration and are marked accordingly.
+High priority — Add a "Continue as Guest" action on 4.1 Login that routes directly to 1.1 Live Map / 2.1 Search, so NFR08's no-login guarantee is visible at the entry point rather than only true once a user is already past it. (Not yet implemented.)
+Medium priority — ✅ Implemented this iteration: an explicit, multi-select Zone control was added to 1.2 Filters, separate from Floor, so FR-03 remains fully explicit on floors with more than one zone.
+Medium priority — Add a one-tap "Notify me" quick action directly on MISSING rows in 2.1 Search, in addition to the existing 2.2 Book Detail → 2.3 Notify Setup path. (Not yet implemented.)
+Low–Medium priority — Give 3.3 Alerts a per-alert "Resolve" control alongside the bulk "Mark All Read", so actioned and pending alerts stay visually distinct. (Not yet implemented.)
+Low priority — Wire the audience/report-type pickers in 4.2 Reports Landing to real multi-option dropdowns before the next fidelity pass. (Not yet implemented.)
+Future enhancement — ✅ Implemented this iteration: an interactive Floor Plan tile view (1.1B) now sits alongside 1.1 Live Map's zone-card list, reachable via a List View / Floor Plan toggle, exactly as proposed in Section 2.1's Flow 1 variant discussion.
+Additional enhancement (not previously recommended, added this iteration) — A full booking lifecycle: QR-code check-in on arrival (1.4 → 1.4B) and an explicit cancel-confirmation step (1.5 → 1.5B), so a reservation can be completed and unwound entirely within the app.
+5. Prototyping Tool Justification
+The group selected Figma for both the low-fidelity wireframes and the high-fidelity interactive prototype, over alternatives such as Adobe XD, for four reasons: (1) real-time multi-user editing let all four members work on their assigned flow inside one file simultaneously, avoiding version-merge conflicts across a 4-member group; (2) native prototyping links allowed the wireframe stage and the high-fidelity stage to be connected into a navigable flow without exporting to a separate tool, keeping the sketch → wireframe → low-fi → hi-fi progression traceable in one file; (3) reusable components/variants (buttons, status pills, bottom-tab bars) kept all 23 screens visually consistent with a single source of truth; and (4) Figma's free "Starter" tier is sufficient for a student group and the file can be shared as a single project link with comment access for the demonstration/viva.
+6. Time Schedule
+Milestone 02 ran from publication (24 July 2026) to the submission deadline (09 August 2026), 
+organised
+ into three working weeks; this iteration's Flow 1 extension and wireframe mirroring work was completed in the final week.
+#
+Task
+% Done
+Assigned to
+Wk
+ 1
+Wk
+ 2
+Wk
+ 3
+1
+Review Milestone 01 requirements & map to interfaces
+100%
+All members
+X
+2
+Digital/hand-drawn sketches & design-variant comparison (4 flows)
+100%
+All members
+X
+3
+Build wireframes (low-fidelity)
+100%
+All members (per flow)
+X
+X
+4
+Link wireframes into low-fidelity prototype; internal validation walkthrough
+100%
+Wijesingha
+ 
+O.D
+X
+5
+Build high-fidelity prototype (visual design, real content)
+100%
+All members (per flow)
+X
+6
+Design and 
+finalise
+ user-testing plan (tasks, metrics)
+100%
+Subawickrama
+ S G M B
+X
+7
+Run testing sessions (5 participants) & log issues
+100%
+Weerasinghe 
+S.K
+X
+8
+Analyse
+ results, draft recommendations
+100%
+All members
+X
+9
+Implement Flow 1 refinements (Zone filter, Floor Plan view, Check-In, Cancel) and mirror onto wireframes
+100%
+Rathnayaka R M S P
+X
+10
+Compile report & prepare viva
+100%
+Weerasinghe 
+S.K
+X
+7. Visual Design System and Consistency
+All 23 high-fidelity screens share a single visual language — navy headers, orange primary actions, status 
+colour
+-coding (green = available, red = missing/critical, amber = reserved), consistent typography and reused components (buttons, status pills, bottom-tab bars) — carried through from the wireframe stage's shared layout structure. The three screens added this iteration (1.1B, 1.4B, 1.5B) were built by cloning and editing existing styled components so they inherit the same tokens exactly, and the equivalent wireframe screens were mirrored in the project's plain grayscale, bracket-tag wireframe language.
+Low Fidelity Prototype Video →
+[ SCREENSHOT 
+PLACEHOLDER ]
+[ ADD LOW-FIDELITY PROTOTYPE VIDEO LINK 
+HERE ]
+High Fidelity Prototype Video →
+[ SCREENSHOT 
+PLACEHOLDER ]
+[ ADD HIGH-FIDELITY PROTOTYPE VIDEO LINK 
+HERE ]
+Live Figma file (all three pages): https://www.figma.com/design/V5UAoT8PrgSdGmFvNylXBE/
+8. References
+Norman, D. (2013). The Design of Everyday Things: Revised and Expanded Edition. Basic Books.
+Preece, J., Rogers, Y., & Sharp, H. (2015). Interaction Design: Beyond Human-Computer Interaction (4th ed.). John Wiley & Sons.
+Nielsen, J. (1994). Usability Engineering. Morgan Kaufmann.
+Wharton, C., Rieman, J., Lewis, C., & Polson, P. (1994). The cognitive walkthrough method: A practitioner's guide. In J. Nielsen & R. L. Mack (Eds.), Usability Inspection Methods. John Wiley & Sons.
+ISO 9241-11:2018. Ergonomics of human-system interaction — Part 11: Usability: Definitions and concepts. International Organization for Standardization.
+Interaction Design Foundation (
+IxDF
+). (2023). User Research: What It Is and Why You Should Do It. https://www.interaction-design.org/literature/topics/user-research
+Chen, Y., & Zhao, X. (2020). Design and Implementation of Smart Library Seat Management System. Journal of Physics: Conference Series, 1648(3), 032145.
+Awasthi, S., & Sharma, R. (2021). IoT based Smart Library Seat Allocation and Management System. International Journal of Computer Applications, 174(12), 15-20.
+Figma, Inc. (2026). Figma Design and Prototyping Documentation. https://help.figma.com/
+Appendix A — Prototype File Index & Open Instructions
+Raw prototype file: https://www.figma.com/design/V5UAoT8PrgSdGmFvNylXBE/
+The file has three pages: "Sketches (Ideation)", "Wireframes (Low-Fidelity)" (Section 2.3) and "Full Prototype — 20 Screens" (high-fidelity, Section 2.5). To view: open the link in a browser with a free Figma account, or request "Anyone with the link – can view" access from the group if prompted. Use Figma's Present mode (▶ icon, top-right) on any frame to click through the connected prototype flow; 
+flowStartingPoints
+ are set for all four flows on both the wireframes and high-fidelity pages so each flow can be entered directly from the Present-mode picker.
+Appendix B — Reusable Task Script for Recorded Testing
+This script lets the group re-run Section 3's sessions on camera with 5 real or proxy participants (including the new T8–T10 tasks) and upload the recordings to the links in Section 7. Read each instruction aloud verbatim to the participant; do not explain the interface beforehand.
+Pre-session
+Obtain verbal consent to record; confirm the participant's role (student / staff / admin) to assign the matching task set.
+Share the Figma prototype in Present mode, starting from 4.1 Login for staff/admin participants or directly from 1.1 Live Map for student/guest participants.
+Start the recording and a stopwatch before reading the first task.
+During each task
+Read the task text from Section 3.1 exactly as written.
+Do not correct the participant if they tap the wrong element; let them recover or declare the task failed.
+Stop the timer when the participant states they have completed the task (or after 2 minutes, whichever comes first).
+Immediately ask the Single Ease Question: "Overall, how difficult or easy was this task?" (1 = very difficult, 5 = very easy).
+Note any wrong taps, hesitations, or comments verbatim for the issue log.
+Post-session
+Thank the participant and stop recording.
+Transfer the recording to the shared drive folder, set sharing to "Anyone with the link can view", and paste the link into Section 7.
+Log results in the Section 3.2 table format and add any new issues to the Section 3.3 log with a severity rating.

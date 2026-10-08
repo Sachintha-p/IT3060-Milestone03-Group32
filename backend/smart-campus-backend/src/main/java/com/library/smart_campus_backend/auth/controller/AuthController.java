@@ -17,32 +17,15 @@ import org.springframework.web.bind.annotation.*;
  * REST controller for authentication.
  *
  * Public endpoints (no JWT required):
- *   POST /api/auth/register  — create a new STUDENT account
  *   POST /api/auth/login     — authenticate and receive a JWT
  */
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-@Tag(name = "Authentication", description = "Register and login endpoints")
+@Tag(name = "Authentication", description = "Login endpoint")
 public class AuthController {
 
     private final AuthService authService;
-
-    /**
-     * Register a new user.
-     * Returns HTTP 201 with the JWT and user profile on success.
-     */
-    @PostMapping("/register")
-    @Operation(summary = "Register a new student account")
-    public ResponseEntity<ApiResponse<AuthResponse>> register(
-            @Valid @RequestBody RegisterRequest request) {
-
-        AuthResponse authResponse = authService.register(request);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(ApiResponse.ok("Registration successful", authResponse));
-    }
-
     /**
      * Login with email and password.
      * Returns HTTP 200 with the JWT and user profile on success.
@@ -55,4 +38,18 @@ public class AuthController {
         AuthResponse authResponse = authService.login(request);
         return ResponseEntity.ok(ApiResponse.ok("Login successful", authResponse));
     }
+
+    /**
+     * Register a new student user.
+     */
+    @PostMapping("/register")
+    @Operation(summary = "Register and receive a JWT")
+    public ResponseEntity<ApiResponse<AuthResponse>> register(
+            @Valid @RequestBody RegisterRequest request) {
+        
+        AuthResponse authResponse = authService.register(request);
+        return ResponseEntity.ok(ApiResponse.ok("Registration successful", authResponse));
+    }
 }
+
+

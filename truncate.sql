@@ -1,0 +1,1 @@
+TRUNCATE feature2_search_history CASCADE;

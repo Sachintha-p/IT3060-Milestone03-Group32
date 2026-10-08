@@ -39,15 +39,16 @@ public class AuthService {
     public AuthResponse register(RegisterRequest request) {
         // Guard: email must be unique
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Email is already registered: " + request.getEmail());
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT, "An account with this email already exists");
         }
 
-        // Build and persist the new user
+        // Build and persist the new user – password is always encoded
+        // Always assign STUDENT role for public registration
         User user = User.builder()
                 .name(request.getName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.STUDENT) // All self-registrations default to STUDENT
+                .role(Role.STUDENT)
                 .build();
 
         userRepository.save(user);
@@ -65,13 +66,30 @@ public class AuthService {
      * @throws org.springframework.security.authentication.BadCredentialsException if wrong credentials
      */
     public AuthResponse login(LoginRequest request) {
-        // Throws BadCredentialsException if credentials are wrong (handled by GlobalExceptionHandler)
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-        );
+        User user = userRepository.findByEmailOrStudentId(request.getIdentifier(), request.getIdentifier())
+                .orElseThrow(() -> new org.springframework.security.authentication.BadCredentialsException("Invalid email or password"));
 
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        if ("SUSPENDED".equals(user.getStatus())) {
+            throw new org.springframework.security.access.AccessDeniedException("Account is suspended");
+        }
+
+        boolean isStudentTab = "STUDENT".equals(request.getPortal());
+        boolean isStudentAccount = user.getRole() == Role.STUDENT;
+
+        if (isStudentTab && !isStudentAccount) {
+            throw new IllegalArgumentException("This account belongs to the other portal");
+        }
+        if (!isStudentTab && isStudentAccount) {
+            throw new IllegalArgumentException("This account belongs to the other portal");
+        }
+
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(user.getEmail(), request.getPassword())
+            );
+        } catch (org.springframework.security.core.AuthenticationException e) {
+            throw new org.springframework.security.authentication.BadCredentialsException("Invalid email or password");
+        }
 
         String token = jwtUtil.generateToken(user);
         return buildResponse(user, token);
@@ -90,3 +108,5 @@ public class AuthService {
                 .build();
     }
 }
+
+

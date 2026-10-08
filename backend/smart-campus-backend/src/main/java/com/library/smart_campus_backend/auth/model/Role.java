@@ -7,5 +7,6 @@ package com.library.smart_campus_backend.auth.model;
  */
 public enum Role {
     STUDENT,
+    STAFF,
     ADMIN
 }
