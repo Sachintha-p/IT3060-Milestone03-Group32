@@ -24,7 +24,6 @@ export default function UpdateTool() {
 
   // We can hardcode standard statuses for library books based on screenshot
   const statuses = ["Available", "Issued", "Missing / Misplaced", "Reshelved"];
-
   // Map display labels → backend BookStatus enum values
   const STATUS_MAP: Record<string, string> = {
     "Available":           "AVAILABLE",
@@ -32,7 +31,6 @@ export default function UpdateTool() {
     "Missing / Misplaced": "MISSING",
     "Reshelved":           "AVAILABLE",
   };
-
   const [selectedStatus, setSelectedStatus] = useState<string>('');
 
   const handleSearch = async () => {
@@ -63,7 +61,6 @@ export default function UpdateTool() {
 
   const handleUpdate = async () => {
     if (!book || !selectedStatus) return;
-
     // Convert display label to backend enum value
     const backendStatus = STATUS_MAP[selectedStatus] ?? selectedStatus;
 
