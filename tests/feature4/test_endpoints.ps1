@@ -1,5 +1,5 @@
 $baseUrl = 'http://localhost:8080/api'
-$password = 'password123'
+$password = $env:TEST_PASSWORD
 
 function Get-Token($identifier, $password, $portal) {
     $body = @{ identifier = $identifier; password = $password; portal = $portal } | ConvertTo-Json

@@ -3,7 +3,7 @@ backend/smart-campus-backend/target/
 backend/smart-campus-backend/.mvn/
 
 # ── Frontend ──────────────────────────────────────────────────────────
-frontend/node_modules/
+node_modules/
 frontend/.expo/
 frontend/dist/
 frontend/web-build/
