@@ -16,7 +16,7 @@ public class StaffAlertDTO {
     private String message;
     private String priority;
     private String zone;
-    private boolean isRead;
-    private boolean resolved;
+    private Boolean isRead;
+    private Boolean resolved;
     private LocalDateTime createdAt;
 }
