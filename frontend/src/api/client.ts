@@ -8,7 +8,7 @@ import { Platform } from 'react-native';
  */
 
 // ── UPDATE: Oyage Wi-Fi IP Address eka methanata damma ──
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://192.168.8.100:8080';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'https://it3060-milestone03-group32-production.up.railway.app';
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,

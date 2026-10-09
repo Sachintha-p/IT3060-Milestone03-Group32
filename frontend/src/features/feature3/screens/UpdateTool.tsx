@@ -21,6 +21,7 @@ export default function UpdateTool() {
   const [updating, setUpdating] = useState(false);
   const [book, setBook] = useState<any>(null);
   const [logs, setLogs] = useState<any[]>([]);
+  const [showAllLogs, setShowAllLogs] = useState(false);
 
   // We can hardcode standard statuses for library books based on screenshot
   const statuses = ["Available", "Issued", "Missing / Misplaced", "Reshelved"];
@@ -39,6 +40,7 @@ export default function UpdateTool() {
       setLoading(true);
       setBook(null);
       setLogs([]);
+      setShowAllLogs(false);
       
       const res = await feature3Api.searchBooks(query);
       if (res && res.length > 0) {
@@ -144,17 +146,50 @@ export default function UpdateTool() {
             {updating ? <ActivityIndicator color={PALETTE.white} /> : <Text style={styles.updateBtnText}>Save Changes</Text>}
           </TouchableOpacity>
 
-          {logs.length > 0 && (
-            <View style={styles.logsSection}>
-              <Text style={styles.sectionTitle}>RECENT LOGS</Text>
-              {logs.slice(0, 5).map((l, i) => (
-                <View key={i} style={styles.logItem}>
-                  <Text style={styles.logText}>{l.staffName} changed to {l.newStatus}</Text>
-                  <Text style={styles.logDate}>{new Date(l.createdAt).toLocaleString()}</Text>
-                </View>
-              ))}
-            </View>
-          )}
+          <View style={styles.logsSection}>
+            <Text style={styles.sectionTitle}>RECENT LOGS</Text>
+            {logs.length > 0 ? (
+              <>
+                <ScrollView 
+                  style={[styles.logsScrollContainer, showAllLogs && logs.length > 5 ? { maxHeight: 300 } : {}]}
+                  nestedScrollEnabled={true}
+                >
+                  {(showAllLogs ? logs : logs.slice(0, 5)).map((l, i) => (
+                    <View key={i} style={styles.logItem}>
+                      <Text style={styles.logText}>
+                        <Text style={{fontWeight: '700'}}>{l.staffName}</Text> changed status from 
+                      </Text>
+                      <View style={styles.badgeRow}>
+                        <View style={[styles.badge, getBadgeStyle(l.oldStatus)]}>
+                          <Text style={[styles.badgeText, getBadgeTextStyle(l.oldStatus)]}>{l.oldStatus || 'Unknown'}</Text>
+                        </View>
+                        <Ionicons name="arrow-forward" size={14} color={PALETTE.muted} style={{marginHorizontal: 8}} />
+                        <View style={[styles.badge, getBadgeStyle(l.newStatus)]}>
+                          <Text style={[styles.badgeText, getBadgeTextStyle(l.newStatus)]}>{l.newStatus}</Text>
+                        </View>
+                      </View>
+                      <Text style={styles.logDate}>{new Date(l.createdAt).toLocaleString()}</Text>
+                    </View>
+                  ))}
+                </ScrollView>
+                {logs.length > 5 && (
+                  <TouchableOpacity 
+                    style={styles.showAllBtn} 
+                    onPress={() => setShowAllLogs(!showAllLogs)}
+                  >
+                    <Text style={styles.showAllBtnText}>
+                      {showAllLogs ? 'Show less' : `Show all (${logs.length})`}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </>
+            ) : (
+              <View style={styles.emptyLogs}>
+                <Ionicons name="time-outline" size={32} color={PALETTE.border} />
+                <Text style={styles.emptyLogsText}>No activity yet for this book</Text>
+              </View>
+            )}
+          </View>
           
           <TouchableOpacity style={styles.clearBtn} onPress={() => setBook(null)}>
             <Text style={styles.clearBtnText}>Search Another Book</Text>
@@ -166,6 +201,26 @@ export default function UpdateTool() {
     </ScrollView>
   );
 }
+
+const getBadgeStyle = (status: string) => {
+  if (!status) return { backgroundColor: '#F1F5F9' };
+  switch (status.toUpperCase()) {
+    case 'AVAILABLE': return { backgroundColor: '#DCFCE7' };
+    case 'CHECKED_OUT': return { backgroundColor: '#FEF3C7' };
+    case 'MISSING': return { backgroundColor: '#FEE2E2' };
+    default: return { backgroundColor: '#F1F5F9' };
+  }
+};
+
+const getBadgeTextStyle = (status: string) => {
+  if (!status) return { color: '#64748B' };
+  switch (status.toUpperCase()) {
+    case 'AVAILABLE': return { color: '#166534' };
+    case 'CHECKED_OUT': return { color: '#92400E' };
+    case 'MISSING': return { color: '#DC2626' };
+    default: return { color: '#64748B' };
+  }
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -344,5 +399,51 @@ const styles = StyleSheet.create({
   logDate: {
     fontSize: 12,
     color: PALETTE.muted,
+  },
+  logsScrollContainer: {
+    width: '100%',
+  },
+  showAllBtn: {
+    paddingVertical: 12,
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginTop: 8,
+  },
+  showAllBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: PALETTE.navy,
+  },
+  emptyLogs: {
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: PALETTE.border,
+    borderStyle: 'dashed',
+  },
+  emptyLogsText: {
+    marginTop: 8,
+    color: PALETTE.muted,
+    fontSize: 14,
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 6,
+  },
+  badge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  badgeText: {
+    fontSize: 12,
+    fontWeight: '700',
   }
 });

@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 public class Feature3ShelvingLogDTO {
     private Long id;
     private Long bookId;
+    private String bookTitle;
     private Long staffId;
     private String staffName;
     private String oldStatus;

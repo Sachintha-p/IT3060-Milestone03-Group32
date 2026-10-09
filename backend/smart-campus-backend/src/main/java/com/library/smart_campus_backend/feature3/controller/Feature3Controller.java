@@ -72,6 +72,12 @@ public class Feature3Controller {
         return ResponseEntity.ok(ApiResponse.ok("Shelving logs retrieved", feature3Service.getShelvingLogs(id)));
     }
 
+    @GetMapping("/logs/recent")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+    public ResponseEntity<ApiResponse<List<com.library.smart_campus_backend.feature3.dto.Feature3ShelvingLogDTO>>> getRecentLogs() {
+        return ResponseEntity.ok(ApiResponse.ok("Recent shelving logs retrieved", feature3Service.getRecentLogs()));
+    }
+
     // --- Zones / Spaces ---
     @GetMapping("/zones/{zoneName}/spaces")
     @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")

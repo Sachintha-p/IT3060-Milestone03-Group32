@@ -127,9 +127,11 @@ public class Feature3Service {
                 .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
                 .map(log -> {
                     var u = userRepository.findById(log.getStaffId());
+                    var b = bookRepository.findById(log.getBookId());
                     return com.library.smart_campus_backend.feature3.dto.Feature3ShelvingLogDTO.builder()
                             .id(log.getId())
                             .bookId(log.getBookId())
+                            .bookTitle(b.isPresent() ? b.get().getTitle() : null)
                             .staffId(log.getStaffId())
                             .staffName(u.isPresent() ? u.get().getName() : "Unknown Staff")
                             .oldStatus(log.getOldStatus())
@@ -138,6 +140,28 @@ public class Feature3Service {
                             .build();
                 })
                 .collect(Collectors.toList());
+    }
+
+    public List<com.library.smart_campus_backend.feature3.dto.Feature3ShelvingLogDTO> getRecentLogs() {
+        var logs = shelvingLogRepository.findTop20ByOrderByCreatedAtDesc();
+        
+        var userIds = logs.stream().map(com.library.smart_campus_backend.feature3.model.Feature3ShelvingLog::getStaffId).distinct().collect(Collectors.toList());
+        var bookIds = logs.stream().map(com.library.smart_campus_backend.feature3.model.Feature3ShelvingLog::getBookId).distinct().collect(Collectors.toList());
+        
+        var users = userRepository.findAllById(userIds).stream().collect(Collectors.toMap(com.library.smart_campus_backend.auth.model.User::getId, com.library.smart_campus_backend.auth.model.User::getName));
+        var books = bookRepository.findAllById(bookIds).stream().collect(Collectors.toMap(com.library.smart_campus_backend.feature3.model.Feature3Book::getId, com.library.smart_campus_backend.feature3.model.Feature3Book::getTitle));
+
+        return logs.stream().map(log -> com.library.smart_campus_backend.feature3.dto.Feature3ShelvingLogDTO.builder()
+                .id(log.getId())
+                .bookId(log.getBookId())
+                .bookTitle(books.getOrDefault(log.getBookId(), "Unknown Book"))
+                .staffId(log.getStaffId())
+                .staffName(users.getOrDefault(log.getStaffId(), "Unknown Staff"))
+                .oldStatus(log.getOldStatus())
+                .newStatus(log.getNewStatus())
+                .createdAt(log.getCreatedAt())
+                .build()
+        ).collect(Collectors.toList());
     }
 
 

@@ -63,6 +63,10 @@ export const feature3Api = {
     const res = await apiClient.get(`/api/feature3/books/${bookId}/logs`);
     return res.data.data;
   },
+  getRecentLogs: async (): Promise<any[]> => {
+    const res = await apiClient.get(`/api/feature3/logs/recent`);
+    return res.data.data;
+  },
   getAlerts: async (range: string = 'today'): Promise<StaffAlert[]> => {
     const res = await apiClient.get('/api/feature3/alerts', { params: { range } });
     return res.data.data;
