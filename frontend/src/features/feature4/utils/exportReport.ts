@@ -107,7 +107,11 @@ export const downloadCsv = async (report: ReportSummary) => {
       if (!isAvailable) {
         return { success: false, message: 'Sharing is not available on this device.' };
       }
-      await Sharing.shareAsync(fileUri);
+      await Sharing.shareAsync(fileUri, { 
+        mimeType: 'text/csv', 
+        UTI: 'public.comma-separated-values-text',
+        dialogTitle: 'Share CSV Report'
+      });
       return { success: true, message: 'CSV export complete.' };
     }
   } catch (err: any) {
@@ -127,7 +131,11 @@ export const downloadPdf = async (report: ReportSummary) => {
       if (!isAvailable) {
         return { success: false, message: 'Sharing is not available on this device.' };
       }
-      await Sharing.shareAsync(uri);
+      await Sharing.shareAsync(uri, { 
+        mimeType: 'application/pdf', 
+        UTI: 'com.adobe.pdf',
+        dialogTitle: 'Share PDF Report'
+      });
       return { success: true, message: 'PDF export complete.' };
     }
   } catch (err: any) {
