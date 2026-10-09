@@ -51,6 +51,10 @@ export const feature3Api = {
     const res = await apiClient.patch(`/api/feature3/spaces/${id}/status`, { status });
     return res.data.data;
   },
+  updateDeskStatus: async (deskId: number, status: string): Promise<SpaceSummaryDTO> => {
+    const res = await apiClient.patch(`/api/feature3/spaces/${deskId}/status`, { status });
+    return res.data.data;
+  },
   searchBooks: async (q: string): Promise<Book[]> => {
     const res = await apiClient.get('/api/feature3/books', { params: { q } });
     return res.data.data;
