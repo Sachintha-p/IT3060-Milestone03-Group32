@@ -159,7 +159,7 @@ export default function StaffTabsLayout() {
       />
 
       <Tabs.Screen
-        name="zone-details"
+        name="zone-detail"
         options={{
           title: 'Zone Details',
           tabBarLabel: 'Zones',

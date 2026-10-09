@@ -21,15 +21,13 @@ export default function ZoneDetailScreen() {
   const [updatingId, setUpdatingId] = useState<number | null>(null);
 
   useEffect(() => {
-    if (zone) {
-      loadSpaces();
-    }
+    loadSpaces();
   }, [zone]);
 
   const loadSpaces = async () => {
     try {
       setLoading(true);
-      const data = await getSpaces({ zone: [zone as any] });
+      const data = await getSpaces(zone ? { zone: [zone as any] } : undefined);
       setSpaces(data);
     } catch (e) {
       console.error(e);
