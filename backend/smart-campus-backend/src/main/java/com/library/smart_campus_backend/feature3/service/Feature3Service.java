@@ -24,6 +24,7 @@ public class Feature3Service {
     private final com.library.smart_campus_backend.feature1.repository.ReservationRepository reservationRepository;
     private final com.library.smart_campus_backend.feature1.repository.ZoneAlertRepository zoneAlertRepository;
     private final com.library.smart_campus_backend.feature2.service.BookService bookService2;
+    private final java.time.Clock clock;
 
     public List<StaffAlertDTO> getAlerts(String range) {
         if ("today".equalsIgnoreCase(range)) {
@@ -169,8 +170,8 @@ public class Feature3Service {
     public com.library.smart_campus_backend.feature1.dto.SpaceSummaryDTO updateSpaceStatus(Long id, String status) {
         var space = spaceRepository.findById(id).orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND));
         
-        java.time.LocalDate today = java.time.LocalDate.now();
-        java.time.LocalTime now = java.time.LocalTime.now().truncatedTo(java.time.temporal.ChronoUnit.HOURS);
+        java.time.LocalDate today = java.time.LocalDate.now(clock);
+        java.time.LocalTime now = java.time.LocalTime.now(clock).truncatedTo(java.time.temporal.ChronoUnit.HOURS);
         
         var activeRes = reservationRepository.findByReservationDateAndStatusIn(
             today, List.of(com.library.smart_campus_backend.feature1.model.ReservationStatus.RESERVED, com.library.smart_campus_backend.feature1.model.ReservationStatus.CHECKED_IN)
@@ -196,7 +197,7 @@ public class Feature3Service {
                     .startTime(now)
                     .endTime(now.plusHours(1))
                     .status(resStatus)
-                    .createdAt(java.time.LocalDateTime.now())
+                    .createdAt(java.time.LocalDateTime.now(clock))
                     .build());
             }
         }
@@ -214,7 +215,7 @@ public class Feature3Service {
                 .zone(space.getZone().name())
                 .isRead(false)
                 .resolved(false)
-                .createdAt(java.time.LocalDateTime.now())
+                .createdAt(java.time.LocalDateTime.now(clock))
                 .build());
         }
         
