@@ -67,7 +67,12 @@ public class Reservation {
             this.userActiveSlotKey = null;
         } else {
             this.activeSlotKey = space.getId() + "_" + reservationDate + "_" + startTime;
-            this.userActiveSlotKey = user.getId() + "_" + reservationDate + "_" + startTime;
+            if (user != null && (user.getRole().name().equals("STAFF") || user.getRole().name().equals("ADMIN"))) {
+                // For staff, append space ID so they can override/reserve multiple spaces simultaneously
+                this.userActiveSlotKey = user.getId() + "_staff_" + space.getId() + "_" + reservationDate + "_" + startTime;
+            } else {
+                this.userActiveSlotKey = user.getId() + "_" + reservationDate + "_" + startTime;
+            }
         }
     }
 }
