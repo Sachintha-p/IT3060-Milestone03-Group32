@@ -175,7 +175,7 @@ public class Feature3Service {
         var activeRes = reservationRepository.findByReservationDateAndStatusIn(
             today, List.of(com.library.smart_campus_backend.feature1.model.ReservationStatus.RESERVED, com.library.smart_campus_backend.feature1.model.ReservationStatus.CHECKED_IN)
         );
-        var currentRes = activeRes.stream().filter(r -> r.getSpace().getId().equals(id) && !now.isBefore(r.getStartTime()) && now.isBefore(r.getEndTime())).findFirst();
+        var currentRes = activeRes.stream().filter(r -> r.getSpace().getId().equals(id) && !now.isBefore(r.getStartTime()) && (r.getEndTime().equals(java.time.LocalTime.MIDNIGHT) || now.isBefore(r.getEndTime()))).findFirst();
         
         String username = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getName();
         var user = userRepository.findByEmail(username).orElseThrow();

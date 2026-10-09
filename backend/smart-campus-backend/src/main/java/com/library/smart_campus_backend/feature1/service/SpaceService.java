@@ -164,7 +164,7 @@ public class SpaceService {
 
         Map<Long, Reservation> map = new HashMap<>();
         for (Reservation r : todayActive) {
-            if (!currentSlot.isBefore(r.getStartTime()) && currentSlot.isBefore(r.getEndTime())) {
+            if (!currentSlot.isBefore(r.getStartTime()) && (r.getEndTime().equals(LocalTime.MIDNIGHT) || currentSlot.isBefore(r.getEndTime()))) {
                 map.put(r.getSpace().getId(), r);
             }
         }
